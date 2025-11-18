@@ -1,0 +1,14 @@
+# hide node modules
+node_modules/
+
+# hide env
+.env
+.env.local
+
+# log files
+npm-debug.log
+.DS_Store
+
+# build folder
+build/
+dist/
