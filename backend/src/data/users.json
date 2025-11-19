@@ -1,22 +1,38 @@
 [
   {
     "user_id": "M891D5Y1110",
-    "name": "Mikail Thoriq Kariemshah Banowo"
+    "name": "Mikail Thoriq Kariemshah Banowo",
+    "email": "mikail@email.com",
+    "password": "123"
   },
   {
     "user_id": "M891D5Y1167",
-    "name": "Muhamad Abid Atalah"
+    "name": "Muhamad Abid Atalah",
+    "email": "abid@email.com",
+    "password": "123"
   },
   {
     "user_id": "R891D5Y1908",
-    "name": "Tezar Besarigarjita"
+    "name": "Tezar Besarigarjita",
+    "email": "tezar@email.com",
+    "password": "123"
   },
   {
     "user_id": "R891D5Y1523",
-    "name": "Novandi Ahmad Ramdhan"
+    "name": "Novandi Ahmad Ramdhan",
+    "email": "novandi@email.com",
+    "password": "123"
   },
   {
     "user_id": "R891D5Y0960",
-    "name": "Khadi Akbar Mulyadi"
+    "name": "Khadi Akbar Mulyadi",
+    "email": "khadi@email.com",
+    "password": "123"
+  },
+  {
+    "user_id": "U-1763527463331",
+    "name": "tezar coba test",
+    "email": "tezar@test",
+    "password": "12345"
   }
 ]
