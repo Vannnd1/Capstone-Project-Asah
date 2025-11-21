@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const express = require('express');
 const cors = require('cors');
 
@@ -6,7 +8,7 @@ const dashboardRoutes = require('./routes/dashboardRoutes');
 const authRoutes = require('./routes/authRoutes'); // for auth
 
 const app = express();
-const PORT = 3001; // Port untuk backend sementara
+const PORT = process.env.PORT || 3001;
 
 // === Middleware ===
 app.use(cors()); // Izinkan koneksi dari 'origin' (React) yang berbeda
