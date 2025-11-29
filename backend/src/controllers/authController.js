@@ -77,7 +77,8 @@ const login = async (req, res) => {
             user: {
                 user_id: user.id, // Pakai ID dari Supabase
                 name: user.name,
-                email: user.email
+                email: user.email,
+                image_path: user.image_path
             }
         });
 

@@ -1,0 +1,29 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- PEMBASMI GARIS BACKGROUND --- */
+
+/* 1. Hapus background image dari body */
+body, #root, main {
+  background-image: none !important;
+  background-color: transparent; /* Reset ke transparan */
+}
+
+/* 2. Warna tema tetap ada */
+html.dark body {
+  background-color: #111827 !important; /* gray-900 */
+}
+html body {
+  background-color: #ffffff !important; /* white */
+}
+
+/* 3. Elemen SVG dekorasi yang biasanya 'absolute' & 'z-10' disembunyikan */
+.absolute.-z-10 {
+  display: none !important;
+}
+
+/* 4. Hapus paksa jika ada SVG nyasar di background container utama */
+div[class*="inset-0"] > svg {
+  display: none !important;
+}
