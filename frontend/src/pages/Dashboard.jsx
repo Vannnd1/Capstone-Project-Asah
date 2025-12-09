@@ -9,35 +9,46 @@ import { getDashboardData } from '../services/ApiService';
 const Dashboard = ({ onLogout }) => { 
     const { t } = useApp(); 
     
+    // --- KONFIGURASI BULAN (Dinamis) ---
+    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    
+    // Ambil bulan saat ini (0-11) -> konversi ke string (misal: "Des")
+    const currentMonthIndex = new Date().getMonth();
+    const currentMonthShort = MONTHS[currentMonthIndex];
+
     // --- STATE ---
     const [viewMode, setViewMode] = useState('daily');
-    const [selectedMonth, setSelectedMonth] = useState('Jun');
+    // Default state ke bulan SEKARANG, agar chart langsung muncul
+    const [selectedMonth, setSelectedMonth] = useState(currentMonthShort);
     const [target, setTarget] = useState('');
     
     // State Data Full dari Backend
     const [apiData, setApiData] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Data Turunan (Derived State) - Agar aman saat loading
+    // --- DATA TURUNAN (Derived State) ---
+    // Pastikan data aman saat loading atau jika key bulan tidak ada
     const chartData = apiData ? (
         viewMode === 'yearly' 
             ? apiData.yearly 
-            : apiData.charts[selectedMonth]?.[viewMode] || []
+            : apiData.charts?.[selectedMonth]?.[viewMode] || []
     ) : [];
 
     const stats = apiData?.statistics || { avgScore: 0, totalHours: 0 };
+    
     const insight = {
         text: apiData?.insightText || 'Memuat insight...',
-        color: apiData?.learningStyle === 'consistent_learner' ? 'blue' : 'green'
+        color: apiData?.color || 'gray' // Mengambil warna dari backend
     };
 
     const userName = apiData?.user?.name || localStorage.getItem('userName') || 'Siswa';
     const userImagePath = localStorage.getItem('userAvatarPath') || '/assets/avatar-default.png';
 
+    // --- EFFECT: AMBIL DATA ---
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Ambil target lokal (karena ini preferensi UI)
+                // Ambil target lokal
                 const savedTarget = localStorage.getItem('user_target') || 'belum_diatur';
                 setTarget(savedTarget);
 
@@ -45,7 +56,7 @@ const Dashboard = ({ onLogout }) => {
                 const userId = localStorage.getItem('userId');
                 if (userId) {
                     const data = await getDashboardData(userId);
-                    setApiData(data); // Simpan SEMUA data dari backend
+                    setApiData(data); // Simpan data backend
                 }
             } catch (error) {
                 console.error("Gagal ambil data:", error);
@@ -55,9 +66,8 @@ const Dashboard = ({ onLogout }) => {
         };
 
         fetchData();
-    }, []); // Cukup dijalankan sekali saat mount
+    }, []);
 
-    // Handler Ganti View hanya mengubah state UI, data chart otomatis berubah karena variabel 'chartData' di atas
     const handleViewChange = (mode) => setViewMode(mode);
     const handleMonthChange = (e) => setSelectedMonth(e.target.value);
 
@@ -70,7 +80,7 @@ const Dashboard = ({ onLogout }) => {
 
     return (
         <div className="space-y-8 animate-in fade-in duration-700 pb-10">
-            {/* ... (BAGIAN HEADER & AVATAR SAMA SEPERTI SEBELUMNYA) ... */}
+            {/* --- HEADER --- */}
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
@@ -81,7 +91,7 @@ const Dashboard = ({ onLogout }) => {
                 <AvatarDropdown onLogout={onLogout} userImagePath={userImagePath} userName={userName} />
             </header>
 
-            {/* ... (BAGIAN CARDS SAMA, TAPI VARIABLES SUDAH OTOMATIS DARI STATE 'stats') ... */}
+            {/* --- STATISTIC CARDS --- */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Card Target */}
                 <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-4 transition hover:shadow-md hover:-translate-y-1">
@@ -109,8 +119,9 @@ const Dashboard = ({ onLogout }) => {
                 </div>
             </div>
 
-            {/* ... (BAGIAN CHART & INSIGHT SAMA, DATA SUDAH TERHUBUNG) ... */}
+            {/* --- CHART & INSIGHT --- */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Kolom Chart */}
                 <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
                     {/* Header Chart */}
                     <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
@@ -118,30 +129,37 @@ const Dashboard = ({ onLogout }) => {
                             <h3 className="font-bold text-gray-800 dark:text-white text-lg flex items-center gap-2">
                                 <Calendar size={20} className="text-blue-600"/> Aktivitas
                             </h3>
+                            {/* Dropdown Bulan Dinamis */}
                             <div className={`relative transition-opacity duration-300 ${viewMode === 'yearly' ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-                                <select value={selectedMonth} onChange={handleMonthChange} className="appearance-none bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm font-bold py-1.5 px-3 pr-8 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition">
-                                    <option value="Jun">Juni 2025</option>
-                                    <option value="Nov">Nov 2025</option>
-                                    <option value="Des">Des 2025</option>
+                                <select 
+                                    value={selectedMonth} 
+                                    onChange={handleMonthChange} 
+                                    className="appearance-none bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm font-bold py-1.5 px-3 pr-8 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                                >
+                                    {/* Render opsi bulan secara loop */}
+                                    {MONTHS.map((m) => (
+                                        <option key={m} value={m}>{m} {new Date().getFullYear()}</option>
+                                    ))}
                                 </select>
                                 <ChevronDown size={14} className="absolute right-2 top-2.5 text-gray-500 pointer-events-none"/>
                             </div>
                         </div>
+                        {/* Tombol View Mode */}
                         <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
                             <button onClick={() => handleViewChange('daily')} className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${viewMode === 'daily' ? 'bg-white dark:bg-gray-600 text-blue-600 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>Harian</button>
                             <button onClick={() => handleViewChange('weekly')} className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${viewMode === 'weekly' ? 'bg-white dark:bg-gray-600 text-blue-600 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>Mingguan</button>
                             <button onClick={() => handleViewChange('yearly')} className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${viewMode === 'yearly' ? 'bg-white dark:bg-gray-600 text-blue-600 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>Tahun Ini</button>
                         </div>
                     </div>
-                    {/* Render Chart */}
+                    {/* Komponen Grafik */}
                     <ProgressChart data={chartData} />
                 </div>
                 
-                {/* Insight Section */}
+                {/* Kolom Insight */}
                 <div className="flex flex-col gap-6">
                     <AIInsightCard insight={insight} />
                     <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg">
-                        <h3 className="font-bold text-lg mb-2">🚀 Terus Semangat!</h3>
+                        <h3 className="font-bold text-lg mb-2">🚀 Rekomendasi AI!</h3>
                         <p className="text-blue-100 text-sm opacity-90">
                             "Konsistensi adalah kunci. Setiap modul yang kamu selesaikan hari ini membawamu lebih dekat ke tujuan."
                         </p>
