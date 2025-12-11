@@ -1,0 +1,43 @@
+{
+  "R891D5Y1908": {
+    "stats": {
+      "avgScore": 85,
+      "totalHours": 1540
+    },
+    "charts": {
+      "Jun": {
+        "daily": [
+            { "label": "Sen", "value": 4 }, { "label": "Sel", "value": 5 }, { "label": "Rab", "value": 0 },
+            { "label": "Kam", "value": 6 }, { "label": "Jum", "value": 3 }, { "label": "Sab", "value": 8 }, { "label": "Min", "value": 2 }
+        ],
+        "weekly": [
+            { "label": "Mgg 1", "value": 20 }, { "label": "Mgg 2", "value": 25 }, { "label": "Mgg 3", "value": 18 }, { "label": "Mgg 4", "value": 28 }
+        ]
+      },
+      "Nov": {
+        "daily": [
+            { "label": "Sen", "value": 2 }, { "label": "Sel", "value": 2 }, { "label": "Rab", "value": 3 },
+            { "label": "Kam", "value": 1 }, { "label": "Jum", "value": 0 }, { "label": "Sab", "value": 5 }, { "label": "Min", "value": 4 }
+        ],
+        "weekly": [
+            { "label": "Mgg 1", "value": 5 }, { "label": "Mgg 2", "value": 8 }, { "label": "Mgg 3", "value": 12 }, { "label": "Mgg 4", "value": 7 }
+        ]
+      },
+      "Des": {
+        "daily": [
+            { "label": "Sen", "value": 1 }, { "label": "Sel", "value": 0 }, { "label": "Rab", "value": 0 },
+            { "label": "Kam", "value": 2 }, { "label": "Jum", "value": 0 }, { "label": "Sab", "value": 0 }, { "label": "Min", "value": 0 }
+        ],
+        "weekly": [
+            { "label": "Mgg 1", "value": 3 }, { "label": "Mgg 2", "value": 2 }, { "label": "Mgg 3", "value": 0 }, { "label": "Mgg 4", "value": 0 }
+        ]
+      }
+    },
+    "yearly": [
+        { "label": "Jan", "value": 15 }, { "label": "Feb", "value": 20 }, { "label": "Mar", "value": 18 },
+        { "label": "Apr", "value": 25 }, { "label": "Mei", "value": 30 }, { "label": "Jun", "value": 91 },
+        { "label": "Jul", "value": 10 }, { "label": "Agu", "value": 12 }, { "label": "Sep", "value": 15 },
+        { "label": "Okt", "value": 20 }, { "label": "Nov", "value": 32 }, { "label": "Des", "value": 5 }
+    ]
+  }
+}
