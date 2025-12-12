@@ -105,7 +105,7 @@ const LandingPage = ({ onLogin }) => {
                     >
                         Daftar Sekarang (Gratis)
                     </button>
-                    <p className="text-sm text-gray-500 mt-6">&copy; {new Date().getFullYear()} AI Learning. All rights reserved.</p>
+                    <p className="text-sm text-gray-500 mt-6">&copy; {new Date().getFullYear()} Adaptive Learning Insight. All rights reserved.</p>
                 </div>
             </footer>
             

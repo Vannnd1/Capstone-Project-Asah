@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext'; 
 import { login, register } from '../services/ApiService'; 
+import { Eye, EyeOff, X } from 'lucide-react'; // Tambah Import Icon
 
 // --- Sub-Komponen: Register Form ---
 const RegisterForm = ({ onRegisterSuccess }) => {
@@ -9,6 +10,9 @@ const RegisterForm = ({ onRegisterSuccess }) => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false); 
+    
+    // State untuk mata password
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleRegister = async (e) => {
         e.preventDefault();
@@ -17,9 +21,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
 
         try {
             await register(name, email, password);
-            
             alert('Pendaftaran berhasil! Silakan Login untuk melanjutkan.');
-            // Kirim false agar modal hanya tertutup (tidak langsung login)
             onRegisterSuccess(false); 
         } catch (err) {
             setError(err.message || 'Pendaftaran gagal. Silakan coba lagi.');
@@ -55,16 +57,28 @@ const RegisterForm = ({ onRegisterSuccess }) => {
                     required
                 />
             </div>
+            
+            {/* Input Password dengan Mata */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-                <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 dark:text-white"
-                    required
-                />
+                <div className="relative">
+                    <input
+                        type={showPassword ? "text" : "password"} // Tipe dinamis
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full p-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 dark:text-white"
+                        required
+                    />
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                    >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                </div>
             </div>
+
             <button
                 type="submit"
                 className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
@@ -82,6 +96,9 @@ const LoginFormComponent = ({ onLogin }) => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false); 
+    
+    // State untuk mata password
+    const [showPassword, setShowPassword] = useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -89,18 +106,16 @@ const LoginFormComponent = ({ onLogin }) => {
         setLoading(true);
 
         try {
-            // Panggil API Login
             const data = await login(email, password);
 
-            // SIMPAN DATA PENGGUNA DARI BACKEND
             localStorage.setItem('userId', data.user.user_id); 
-            localStorage.setItem('userName', data.user.name); // <--- SIMPAN NAMA
-            localStorage.setItem('userEmail', data.user.email); // < --- INI BUAT SIMPEN EMAIL YGY
+            localStorage.setItem('userName', data.user.name);
+            localStorage.setItem('userEmail', data.user.email);
             
             const avatar = data.user.image_path || '/assets/avatar-default.png';
             localStorage.setItem('userAvatarPath', avatar);
 
-            onLogin(true); // Login berhasil
+            onLogin(true); 
         } catch (err) {
             setError(err.message || 'Login gagal. Silakan periksa kembali.');
         } finally {
@@ -125,16 +140,28 @@ const LoginFormComponent = ({ onLogin }) => {
                     required
                 />
             </div>
+            
+            {/* Input Password dengan Mata */}
             <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-                <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 dark:text-white"
-                    required
-                />
+                <div className="relative">
+                    <input
+                        type={showPassword ? "text" : "password"} // Tipe dinamis
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full p-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 dark:text-white"
+                        required
+                    />
+                    <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                    >
+                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                </div>
             </div>
+
             <button
                 type="submit"
                 className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
@@ -157,18 +184,26 @@ const AuthModal = ({ onLogin, onClose, initialMode = 'login' }) => {
         if (isLoggedIn) {
             onLogin(); 
         }
-        // Jika register berhasil (isLoggedIn=false), modal hanya ditutup dan user harus login
         onClose(); 
     };
 
     return (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-[100] p-4" onClick={onClose}>
+            {/* Backdrop Blur effect added via class if desired, or handled by CSS */}
             <div 
-                className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md transform transition-all"
+                className="relative bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md transform transition-all"
                 onClick={(e) => e.stopPropagation()} 
             >
+                {/* Tombol Close X di Pojok Kanan Atas */}
+                <button 
+                    onClick={onClose}
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                >
+                    <X size={24} />
+                </button>
+
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-                    {isRegisterMode ? 'Buat Akun Baru' : 'Masuk ke AI Learning'}
+                    {isRegisterMode ? 'Buat Akun Baru' : 'Masuk ke Adaptive Learning'}
                 </h2>
                 
                 {isRegisterMode 

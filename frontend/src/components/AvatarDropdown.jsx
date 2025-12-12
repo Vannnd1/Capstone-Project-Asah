@@ -1,75 +1,87 @@
-import React, { useState } from 'react';
-import { LogOut, User, Settings } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-// HAPUS: import { useApp } from '../context/AppContext'; // TIDAK DIPERLUKAN DI SINI
+import React, { useState, useRef, useEffect } from 'react';
+import { LogOut, Settings, User, ChevronDown } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-const AvatarDropdown = ({ onLogout, userImagePath, userName }) => {
-    // Note: Kita HAPUS useApp, jadi Dark Mode di Dropdown mungkin tidak berfungsi, 
-    // tapi ini prioritas untuk FIX CRASH.
-    
+const AvatarDropdown = ({ userImagePath, userName, onLogout }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const navigate = useNavigate();
+    const dropdownRef = useRef(null);
+    
+    // --- STATE UNTUK ERROR GAMBAR ---
+    const [imgError, setImgError] = useState(false);
 
-    const handleMenuClick = (action) => {
-        setIsOpen(false);
-        if (action === 'logout') {
-            onLogout();
-        } else if (action === 'settings') {
-            navigate('/settings');
-        } else if (action === 'profile') {
-            navigate('/settings/profile'); 
-        }
-    };
+    // Toggle dropdown
+    const toggleDropdown = () => setIsOpen(!isOpen);
+
+    // Close dropdown saat klik di luar
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    // --- KOMPONEN SVG PLACEHOLDER (ANTI BLANK) ---
+    const DefaultAvatarIcon = () => (
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#9ca3af" className="w-full h-full p-1 bg-gray-200 rounded-full">
+            <path fillRule="evenodd" d="M18.685 19.097A9.723 9.723 0 0021.75 12c0-5.385-4.365-9.75-9.75-9.75S2.25 6.615 2.25 12a9.723 9.723 0 003.065 7.097A9.716 9.716 0 0012 21.75a9.716 9.716 0 006.685-2.653zm-12.54-1.285A7.486 7.486 0 0112 15a7.486 7.486 0 015.855 2.812A8.224 8.224 0 0112 20.25a8.224 8.224 0 01-5.855-2.438zM15.75 9a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" clipRule="evenodd" />
+        </svg>
+    );
 
     return (
-        <div className="relative inline-block text-left z-30">
-            {/* Tombol Avatar */}
+        <div className="relative" ref={dropdownRef}>
+            {/* BUTTON TRIGGER */}
             <button 
-                onClick={() => setIsOpen(!isOpen)}
-                className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition focus:outline-none"
-                title={`Profil ${userName}`}
+                onClick={toggleDropdown}
+                className="flex items-center gap-3 bg-white dark:bg-gray-800 p-2 pr-4 rounded-full shadow-sm border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
-                <img 
-                    src={userImagePath} 
-                    alt={`Profil ${userName}`}
-                    className="w-10 h-10 rounded-full border-2 border-transparent hover:border-blue-500 shadow-sm object-cover transition" 
-                />
+                {/* --- BAGIAN FOTO (LOGIKA PLACEHOLDER) --- */}
+                <div className="w-10 h-10 rounded-full overflow-hidden border border-gray-200 dark:border-gray-600">
+                    {/* Logika: Ada Path Foto DAN Tidak Error -> Tampilkan Foto */}
+                    {userImagePath && !imgError ? (
+                        <img 
+                            src={userImagePath} 
+                            alt={userName} 
+                            className="w-full h-full object-cover"
+                            onError={() => setImgError(true)} // Jika error, switch ke SVG
+                        />
+                    ) : (
+                        // Jika tidak ada foto atau error -> Tampilkan SVG Placeholder
+                        <DefaultAvatarIcon />
+                    )}
+                </div>
+
+                {/* --- TEKS NAMA --- */}
+
+
+                <ChevronDown size={16} className={`text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>
 
-            {/* Dropdown Menu */}
+            {/* --- DROPDOWN MENU --- */}
             {isOpen && (
-                <div 
-                    // menggunakan class Dark Mode yang AMAN TANPA Context:
-                    className="absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white dark:bg-gray-700 ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 dark:divide-gray-600"
-                    role="menu" aria-orientation="vertical" aria-labelledby="menu-button"
-                >
-                    <div className="py-1">
-                        <span className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 font-bold border-b border-gray-100 dark:border-gray-600 truncate">
-                            {userName}
-                        </span>
+                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700 mb-2">
+                        <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{userName}</p>
+                        <p className="text-xs text-gray-500">Mode Siswa</p>
                     </div>
-                    <div className="py-1" role="none">
-                        <button 
-                            onClick={() => handleMenuClick('profile')}
-                            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
-                        >
-                            <User size={16} /> Lihat Profil
-                        </button>
-                        <button 
-                            onClick={() => handleMenuClick('settings')}
-                            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"
-                        >
-                            <Settings size={16} /> Pengaturan
-                        </button>
-                    </div>
-                    <div className="py-1" role="none">
-                        <button 
-                            onClick={() => handleMenuClick('logout')}
-                            className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-gray-600"
-                        >
-                            <LogOut size={16} /> Keluar
-                        </button>
-                    </div>
+
+                    <Link to="/settings/profile" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <User size={16} /> Profil Saya
+                    </Link>
+                    <Link to="/settings" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                        <Settings size={16} /> Pengaturan
+                    </Link>
+                    
+                    <div className="h-px bg-gray-100 dark:bg-gray-700 my-2"></div>
+
+                    <button 
+                        onClick={onLogout}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
+                    >
+                        <LogOut size={16} /> Keluar
+                    </button>
                 </div>
             )}
         </div>
