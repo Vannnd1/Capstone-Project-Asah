@@ -1,173 +1,257 @@
-import React, { useEffect, useState } from 'react';
-import { TrendingUp, Activity, Target as TargetIcon, Calendar, ChevronDown } from 'lucide-react';
-import { useApp } from '../context/AppContext'; 
-import AvatarDropdown from '../components/AvatarDropdown';
-import ProgressChart from '../components/ProgressChart';
-import AIInsightCard from '../components/AIInsightCard';
-import { getDashboardData } from '../services/ApiService'; 
+import React from "react";
+import {
+  TrendingUp,
+  Activity,
+  Target as TargetIcon,
+  Calendar,
+  ChevronDown,
+  BookOpen,
+  Sparkles,
+} from "lucide-react";
+import { useApp } from "../context/AppContext";
+import { useAuth } from "../context/AuthContext";
+import { useLearning } from "../context/LearningContext";
+import AvatarDropdown from "../components/AvatarDropdown";
+import ProgressChart from "../components/ProgressChart";
+import AIInsightCard from "../components/AIInsightCard";
 
-const Dashboard = ({ onLogout }) => { 
-    const { t } = useApp(); 
-    
-    // --- KONFIGURASI BULAN (Dinamis) ---
-    const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-    
-    // Ambil bulan saat ini (0-11) -> konversi ke string (misal: "Des")
-    const currentMonthIndex = new Date().getMonth();
-    const currentMonthShort = MONTHS[currentMonthIndex];
+const Dashboard = ({ onLogout }) => {
+  const { t } = useApp();
+  const { user } = useAuth();
+  const {
+    telemetry,
+    insight,
+    recommendations,
+    isLoading,
+    getLearningStyleColor,
+    getLearningStyleLabel,
+  } = useLearning();
 
-    // --- STATE ---
-    const [viewMode, setViewMode] = useState('daily');
-    // Default state ke bulan SEKARANG, agar chart langsung muncul
-    const [selectedMonth, setSelectedMonth] = useState(currentMonthShort);
-    const [target, setTarget] = useState('');
-    
-    // State Data Full dari Backend
-    const [apiData, setApiData] = useState(null);
-    const [loading, setLoading] = useState(true);
+  // User info
+  const userName = user?.display_name || user?.username || "Siswa";
+  const userImagePath =
+    user?.image_path || "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix";
 
-    // --- DATA TURUNAN (Derived State) ---
-    // Pastikan data aman saat loading atau jika key bulan tidak ada
-    const chartData = apiData ? (
-        viewMode === 'yearly' 
-            ? apiData.yearly 
-            : apiData.charts?.[selectedMonth]?.[viewMode] || []
-    ) : [];
+  // Derived data from telemetry
+  const learningStyle = telemetry?.learning_style || "unknown";
+  const metrics = telemetry?.user_metrics || {};
+  const behaviorAnalysis = telemetry?.behavior_analysis || {};
 
-    const stats = apiData?.statistics || { avgScore: 0, totalHours: 0 };
-    
-    const insight = {
-        text: apiData?.insightText || 'Memuat insight...',
-        color: apiData?.color || 'gray' // Mengambil warna dari backend
-    };
+  // Transform insight for AIInsightCard
+  const insightData = {
+    text: insight?.insight_text || "Memuat insight AI...",
+    color: getLearningStyleColor(insight?.learning_style || learningStyle),
+  };
 
-    const userName = apiData?.user?.name || localStorage.getItem('userName') || 'Siswa';
-    const userImagePath = localStorage.getItem('userAvatarPath') || '/assets/avatar-default.png';
+  // Stats from telemetry
+  const stats = {
+    completedModules: metrics.completed_modules || 0,
+    totalActivities: metrics.total_activities || 0,
+    engagementScore: metrics.engagement_score || 0,
+    daysActive: metrics.days_active || 0,
+  };
 
-    // --- EFFECT: AMBIL DATA ---
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Ambil target lokal
-                const savedTarget = localStorage.getItem('user_target') || 'belum_diatur';
-                setTarget(savedTarget);
-
-                // Panggil Backend
-                const userId = localStorage.getItem('userId');
-                if (userId) {
-                    const data = await getDashboardData(userId);
-                    setApiData(data); // Simpan data backend
-                }
-            } catch (error) {
-                console.error("Gagal ambil data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, []);
-
-    const handleViewChange = (mode) => setViewMode(mode);
-    const handleMonthChange = (e) => setSelectedMonth(e.target.value);
-
-    if (loading) return (
-        <div className="p-10 flex flex-col items-center justify-center space-y-4 h-96">
-            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <p className="text-gray-500">Menyiapkan data belajar personalmu...</p>
-        </div>
-    );
-
+  if (isLoading)
     return (
-        <div className="space-y-8 animate-in fade-in duration-700 pb-10">
-            {/* --- HEADER --- */}
-            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                        {t('welcome')}, {userName}! 👋 
-                    </h1>
-                    <p className="text-gray-500 dark:text-gray-400 mt-1">{t('progressMsg')}</p>
-                </div>
-                <AvatarDropdown onLogout={onLogout} userImagePath={userImagePath} userName={userName} />
-            </header>
-
-            {/* --- STATISTIC CARDS --- */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Card Target */}
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-4 transition hover:shadow-md hover:-translate-y-1">
-                    <div className="p-4 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl"><TargetIcon size={28}/></div>
-                    <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">{t('stat_target')}</p>
-                        <p className="text-xl font-bold capitalize text-gray-900 dark:text-white">{target.replace('_', ' ')}</p>
-                    </div>
-                </div>
-                {/* Card Exam Score */}
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-4 transition hover:shadow-md hover:-translate-y-1">
-                    <div className="p-4 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl"><Activity size={28}/></div>
-                    <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">{t('stat_exam')}</p>
-                        <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.avgScore} <span className="text-sm font-normal text-gray-500">/ 100</span></p>
-                    </div>
-                </div>
-                {/* Card Study Hours */}
-                <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-4 transition hover:shadow-md hover:-translate-y-1">
-                    <div className="p-4 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl"><TrendingUp size={28}/></div>
-                    <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">{t('stat_study')}</p>
-                        <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.totalHours} <span className="text-sm font-normal text-gray-500">Jam</span></p>
-                    </div>
-                </div>
-            </div>
-
-            {/* --- CHART & INSIGHT --- */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Kolom Chart */}
-                <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-                    {/* Header Chart */}
-                    <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-                        <div className="flex items-center gap-3">
-                            <h3 className="font-bold text-gray-800 dark:text-white text-lg flex items-center gap-2">
-                                <Calendar size={20} className="text-blue-600"/> Aktivitas
-                            </h3>
-                            {/* Dropdown Bulan Dinamis */}
-                            <div className={`relative transition-opacity duration-300 ${viewMode === 'yearly' ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
-                                <select 
-                                    value={selectedMonth} 
-                                    onChange={handleMonthChange} 
-                                    className="appearance-none bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-sm font-bold py-1.5 px-3 pr-8 rounded-lg cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-                                >
-                                    {/* Render opsi bulan secara loop */}
-                                    {MONTHS.map((m) => (
-                                        <option key={m} value={m}>{m} {new Date().getFullYear()}</option>
-                                    ))}
-                                </select>
-                                <ChevronDown size={14} className="absolute right-2 top-2.5 text-gray-500 pointer-events-none"/>
-                            </div>
-                        </div>
-                        {/* Tombol View Mode */}
-                        <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
-                            <button onClick={() => handleViewChange('daily')} className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${viewMode === 'daily' ? 'bg-white dark:bg-gray-600 text-blue-600 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>Harian</button>
-                            <button onClick={() => handleViewChange('weekly')} className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${viewMode === 'weekly' ? 'bg-white dark:bg-gray-600 text-blue-600 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>Mingguan</button>
-                            <button onClick={() => handleViewChange('yearly')} className={`px-3 py-1.5 text-xs sm:text-sm font-medium rounded-md transition-all ${viewMode === 'yearly' ? 'bg-white dark:bg-gray-600 text-blue-600 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>Tahun Ini</button>
-                        </div>
-                    </div>
-                    {/* Komponen Grafik */}
-                    <ProgressChart data={chartData} />
-                </div>
-                
-                {/* Kolom Insight */}
-                <div className="flex flex-col gap-6">
-                    <AIInsightCard insight={insight} />
-                    <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg">
-                        <h3 className="font-bold text-lg mb-2">🚀 Rekomendasi AI!</h3>
-                        <p className="text-blue-100 text-sm opacity-90">
-                            "Konsistensi adalah kunci. Setiap modul yang kamu selesaikan hari ini membawamu lebih dekat ke tujuan."
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
+      <div className="p-10 flex flex-col items-center justify-center space-y-4 h-96">
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-gray-500">Menyiapkan data belajar personalmu...</p>
+      </div>
     );
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-700 pb-10">
+      {/* --- HEADER --- */}
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {t("welcome")}, {userName}! 👋
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">
+            {t("progressMsg")}
+          </p>
+        </div>
+        <AvatarDropdown
+          onLogout={onLogout}
+          userImagePath={userImagePath}
+          userName={userName}
+        />
+      </header>
+
+      {/* --- LEARNING STYLE BADGE --- */}
+      {telemetry && (
+        <div
+          className={`p-4 rounded-xl border bg-gradient-to-r from-${getLearningStyleColor(
+            learningStyle
+          )}-50 to-${getLearningStyleColor(
+            learningStyle
+          )}-100 dark:from-${getLearningStyleColor(
+            learningStyle
+          )}-900/20 dark:to-${getLearningStyleColor(
+            learningStyle
+          )}-800/20 border-${getLearningStyleColor(
+            learningStyle
+          )}-200 dark:border-${getLearningStyleColor(learningStyle)}-800`}
+        >
+          <div className="flex items-center gap-3">
+            <Sparkles
+              className={`text-${getLearningStyleColor(learningStyle)}-600`}
+              size={24}
+            />
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                Gaya Belajarmu
+              </p>
+              <p
+                className={`text-lg font-bold text-${getLearningStyleColor(
+                  learningStyle
+                )}-700 dark:text-${getLearningStyleColor(learningStyle)}-300`}
+              >
+                {getLearningStyleLabel(learningStyle)}
+              </p>
+            </div>
+            <div className="ml-auto text-right">
+              <p className="text-sm text-gray-500">Confidence</p>
+              <p className="font-bold text-gray-900 dark:text-white">
+                {Math.round((telemetry.confidence || 0) * 100)}%
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- STATISTIC CARDS --- */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {/* Card Modules Completed */}
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-4 transition hover:shadow-md hover:-translate-y-1">
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl">
+            <BookOpen size={28} />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">
+              Modul Selesai
+            </p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">
+              {stats.completedModules}
+            </p>
+          </div>
+        </div>
+        {/* Card Total Activities */}
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-4 transition hover:shadow-md hover:-translate-y-1">
+          <div className="p-4 bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl">
+            <Activity size={28} />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">
+              Total Aktivitas
+            </p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">
+              {stats.totalActivities}
+            </p>
+          </div>
+        </div>
+        {/* Card Days Active */}
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-4 transition hover:shadow-md hover:-translate-y-1">
+          <div className="p-4 bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl">
+            <Calendar size={28} />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">
+              Hari Aktif
+            </p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">
+              {stats.daysActive}{" "}
+              <span className="text-sm font-normal text-gray-500">hari</span>
+            </p>
+          </div>
+        </div>
+        {/* Card Engagement Score */}
+        <div className="bg-white dark:bg-gray-800 p-5 rounded-2xl border border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-4 transition hover:shadow-md hover:-translate-y-1">
+          <div className="p-4 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl">
+            <TrendingUp size={28} />
+          </div>
+          <div>
+            <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">
+              Engagement
+            </p>
+            <p className="text-xl font-bold text-gray-900 dark:text-white">
+              {stats.engagementScore}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* --- INSIGHT & RECOMMENDATIONS --- */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Kolom Insight */}
+        <div className="lg:col-span-2 flex flex-col gap-6">
+          <AIInsightCard insight={insightData} />
+
+          {/* Behavior Analysis Cards */}
+          {behaviorAnalysis.consistency && (
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
+                <p className="text-xs text-gray-500 uppercase mb-1">
+                  Konsistensi
+                </p>
+                <p className="font-bold text-gray-900 dark:text-white capitalize">
+                  {behaviorAnalysis.consistency?.replace("_", " ")}
+                </p>
+              </div>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
+                <p className="text-xs text-gray-500 uppercase mb-1">
+                  Kecepatan
+                </p>
+                <p className="font-bold text-gray-900 dark:text-white capitalize">
+                  {behaviorAnalysis.velocity?.replace("_", " ")}
+                </p>
+              </div>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
+                <p className="text-xs text-gray-500 uppercase mb-1">
+                  Engagement
+                </p>
+                <p className="font-bold text-gray-900 dark:text-white capitalize">
+                  {behaviorAnalysis.engagement_level?.replace("_", " ")}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Kolom Recommendations */}
+        <div className="space-y-4">
+          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg">
+            <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
+              <Sparkles size={20} />
+              Rekomendasi Course
+            </h3>
+            {recommendations.length > 0 ? (
+              <ul className="space-y-3">
+                {recommendations.slice(0, 3).map((rec, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="bg-white/20 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                      {idx + 1}
+                    </span>
+                    <div>
+                      <p className="font-medium text-sm">{rec.name}</p>
+                      <p className="text-blue-200 text-xs">
+                        Score: {Math.round(rec.score * 100)}%
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-blue-100 text-sm opacity-90">
+                Tidak ada rekomendasi saat ini. Terus belajar untuk mendapatkan
+                rekomendasi personal!
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Dashboard;
