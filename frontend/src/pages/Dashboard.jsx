@@ -80,33 +80,14 @@ const Dashboard = ({ onLogout }) => {
 
       {/* --- LEARNING STYLE BADGE --- */}
       {telemetry && (
-        <div
-          className={`p-4 rounded-xl border bg-gradient-to-r from-${getLearningStyleColor(
-            learningStyle
-          )}-50 to-${getLearningStyleColor(
-            learningStyle
-          )}-100 dark:from-${getLearningStyleColor(
-            learningStyle
-          )}-900/20 dark:to-${getLearningStyleColor(
-            learningStyle
-          )}-800/20 border-${getLearningStyleColor(
-            learningStyle
-          )}-200 dark:border-${getLearningStyleColor(learningStyle)}-800`}
-        >
+        <div className="p-4 rounded-xl border bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20 border-emerald-200 dark:border-emerald-800">
           <div className="flex items-center gap-3">
-            <Sparkles
-              className={`text-${getLearningStyleColor(learningStyle)}-600`}
-              size={24}
-            />
+            <Sparkles className="text-emerald-600 dark:text-emerald-400" size={24} />
             <div>
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Gaya Belajarmu
               </p>
-              <p
-                className={`text-lg font-bold text-${getLearningStyleColor(
-                  learningStyle
-                )}-700 dark:text-${getLearningStyleColor(learningStyle)}-300`}
-              >
+              <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300">
                 {getLearningStyleLabel(learningStyle)}
               </p>
             </div>
