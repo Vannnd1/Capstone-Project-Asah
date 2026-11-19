@@ -34,6 +34,8 @@ const Analytics = ({ onLogout }) => {
     fetchInsightHistory,
     isLoading,
     getLearningStyleLabel,
+    learningTarget,
+    targetProgress,
   } = useLearning();
 
   const axisColor = darkMode ? "#9CA3AF" : "#4B5563";
@@ -79,6 +81,25 @@ const Analytics = ({ onLogout }) => {
 
   const currentConfig = styleConfig[learningStyle] || styleConfig.fast_learner;
   const StyleIcon = currentConfig.icon;
+
+  const targetProjections = {
+    santai: {
+      eta: "6–8 Minggu",
+      badge: "Mode Santai (1 modul/hari)",
+      desc: "Dengan target santai 1 modul per hari, AI memproyeksikan kamu akan menyelesaikan seluruh alur belajar secara bertahap dan menyeluruh tanpa kelelahan.",
+    },
+    fokus: {
+      eta: "3–4 Minggu",
+      badge: "Mode Fokus (3 modul/hari)",
+      desc: "Dengan target fokus 3 modul per hari, ritme belajarmu sangat ideal untuk menyelesaikan kurikulum tepat waktu dengan retensi materi yang tinggi.",
+    },
+    hardcore: {
+      eta: "1–2 Minggu",
+      badge: "Mode Hardcore (5+ modul/hari)",
+      desc: "Dengan target intensif 5+ modul per hari, kamu berada di jalur akselerasi cepat untuk menyelesaikan seluruh sertifikasi dalam waktu singkat.",
+    },
+  };
+  const currentProjection = targetProjections[learningTarget] || targetProjections.fokus;
 
   if (isLoading && !telemetry) {
     return (
@@ -253,20 +274,25 @@ const Analytics = ({ onLogout }) => {
             </div>
           </div>
 
-          {/* Kartu 3: Estimasi Kelulusan */}
+          {/* Kartu 3: Estimasi Kelulusan Berdasarkan Target */}
           <div className="bg-purple-50/70 dark:bg-purple-950/20 p-6 rounded-2xl border border-purple-200 dark:border-purple-800 flex items-start gap-4 shadow-sm hover:shadow-md transition">
             <div className="bg-purple-100 dark:bg-purple-800/60 p-3.5 rounded-xl text-purple-700 dark:text-purple-300 shrink-0">
               <Calendar size={28} />
             </div>
             <div>
-              <span className="text-xs font-bold tracking-wide uppercase text-purple-700 dark:text-purple-400">
-                Prediksi Kelulusan AI
-              </span>
-              <h4 className="font-bold text-purple-900 dark:text-purple-200 text-lg mt-0.5">
-                Target Selesai: 3–4 Minggu
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold tracking-wide uppercase text-purple-700 dark:text-purple-400">
+                  Prediksi Kelulusan AI
+                </span>
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
+                  {currentProjection.badge}
+                </span>
+              </div>
+              <h4 className="font-bold text-purple-900 dark:text-purple-200 text-lg mt-1">
+                Target Selesai: {currentProjection.eta}
               </h4>
               <p className="text-purple-800 dark:text-purple-300 mt-1 text-sm leading-relaxed">
-                Dengan ritme belajar {behaviorAnalysis.velocity === "very_fast" ? "sangat cepat" : "stabil"} saat ini, AI memproyeksikan kamu akan menyelesaikan seluruh alur belajar tepat waktu.
+                {currentProjection.desc}
               </p>
             </div>
           </div>

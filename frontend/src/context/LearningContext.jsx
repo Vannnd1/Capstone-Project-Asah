@@ -11,8 +11,47 @@ import { useAuth } from "./AuthContext";
 // Create context
 const LearningContext = createContext(null);
 
+export const TARGET_CONFIGS = {
+  santai: {
+    key: "santai",
+    title: "Santai",
+    modulesPerDay: 1,
+    desc: "1 Modul/Hari • Santai",
+    color: "emerald",
+    badgeClass: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700",
+  },
+  fokus: {
+    key: "fokus",
+    title: "Fokus",
+    modulesPerDay: 3,
+    desc: "3 Modul/Hari • Sedang",
+    color: "blue",
+    badgeClass: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border-blue-300 dark:border-blue-700",
+  },
+  hardcore: {
+    key: "hardcore",
+    title: "Hardcore",
+    modulesPerDay: 5,
+    desc: "5+ Modul/Hari • Intensif",
+    color: "purple",
+    badgeClass: "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-300 dark:border-purple-700",
+  },
+};
+
 export const LearningProvider = ({ children }) => {
   const { isAuthenticated, user } = useAuth();
+
+  // Learning target state
+  const [learningTarget, setLearningTargetState] = useState(
+    user?.learning_target || localStorage.getItem("user_target") || "fokus"
+  );
+
+  useEffect(() => {
+    if (user?.learning_target) {
+      setLearningTargetState(user.learning_target);
+      localStorage.setItem("user_target", user.learning_target);
+    }
+  }, [user]);
 
   // State for learning data
   const [telemetry, setTelemetry] = useState(null);
@@ -154,6 +193,35 @@ export const LearningProvider = ({ children }) => {
     }
   }, [isAuthenticated, user, fetchAllData]);
 
+  // Save learning target
+  const saveLearningTarget = useCallback(async (newTarget) => {
+    setLearningTargetState(newTarget);
+    localStorage.setItem("user_target", newTarget);
+    try {
+      await api.updateLearningTarget(newTarget);
+      // Re-fetch insight so AI advice immediately adapts to the new target
+      await fetchInsight();
+    } catch (err) {
+      console.warn("Could not sync target to server:", err);
+    }
+  }, [fetchInsight]);
+
+  // Target progress computation
+  const targetConfig = TARGET_CONFIGS[learningTarget] || TARGET_CONFIGS.fokus;
+  const todayDone = telemetry?.user_metrics?.today_completed_modules !== undefined
+    ? telemetry.user_metrics.today_completed_modules
+    : 1;
+
+  const targetProgress = {
+    targetKey: learningTarget,
+    config: targetConfig,
+    quota: targetConfig.modulesPerDay,
+    completedToday: todayDone,
+    percentage: Math.min(Math.round((todayDone / targetConfig.modulesPerDay) * 100), 100),
+    isAchieved: todayDone >= targetConfig.modulesPerDay,
+    remaining: Math.max(targetConfig.modulesPerDay - todayDone, 0),
+  };
+
   // Clear error
   const clearError = useCallback(() => {
     setError(null);
@@ -188,6 +256,9 @@ export const LearningProvider = ({ children }) => {
     recommendations,
     activityHistory,
     insightHistory,
+    learningTarget,
+    targetProgress,
+    TARGET_CONFIGS,
 
     // States
     isLoading,
@@ -201,6 +272,7 @@ export const LearningProvider = ({ children }) => {
     fetchActivityHistory,
     logActivity,
     fetchAllData,
+    saveLearningTarget,
     clearError,
 
     // Helpers

@@ -18,6 +18,7 @@ class UserResponse(BaseModel):
     email: str
     display_name: Optional[str] = None
     image_path: Optional[str] = None
+    learning_target: Optional[str] = "fokus"
     is_active: bool
     created_at: datetime
 

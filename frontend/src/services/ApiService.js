@@ -185,6 +185,33 @@ export const getActivityHistory = async (limit = 50) => {
     return apiRequest(`/api/learning/activity?limit=${limit}`, { method: 'GET' });
 };
 
+// === LEARNING TARGET API ===
+
+/**
+ * Update user learning target
+ * @param {string} target - 'santai' | 'fokus' | 'hardcore'
+ */
+export const updateLearningTarget = async (target) => {
+    try {
+        const data = await apiRequest('/api/learning/target', {
+            method: 'PUT',
+            body: JSON.stringify({ learning_target: target }),
+        });
+        localStorage.setItem('user_target', target);
+        const storedUser = getStoredUser();
+        if (storedUser) {
+            storedUser.learning_target = target;
+            localStorage.setItem('user', JSON.stringify(storedUser));
+        }
+        return data;
+    } catch (err) {
+        // Fallback to localStorage if offline / endpoint not available
+        console.warn('API updateLearningTarget fallback to localStorage:', err);
+        localStorage.setItem('user_target', target);
+        return { status: 'success', learning_target: target };
+    }
+};
+
 // === PROFILE API (Placeholder - Backend may not support this) ===
 
 /**

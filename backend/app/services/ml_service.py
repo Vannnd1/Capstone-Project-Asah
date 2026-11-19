@@ -7,6 +7,8 @@ def calculate_user_telemetry(activities: List[Activity]) -> TelemetryResponse:
     total_acts = len(activities)
     completed_modules = sum(1 for a in activities if a.action == "complete")
     total_submissions = sum(1 for a in activities if a.action == "submit")
+    today_date = datetime.utcnow().date()
+    today_completed_modules = sum(1 for a in activities if a.action == "complete" and a.timestamp.date() == today_date)
     
     # Calculate days active from unique activity dates
     dates = set(a.timestamp.date() for a in activities) if activities else set()
@@ -31,6 +33,7 @@ def calculate_user_telemetry(activities: List[Activity]) -> TelemetryResponse:
         days_active = 5
         max_daily_completions = 4
         engagement_score = 85
+        today_completed_modules = 1
 
     # Determine behavior metrics
     if max_daily_completions >= 4 or (completed_modules / max(days_active, 1) >= 2.0):
@@ -74,7 +77,8 @@ def calculate_user_telemetry(activities: List[Activity]) -> TelemetryResponse:
         total_submissions=total_submissions,
         days_active=days_active,
         max_daily_completions=max_daily_completions,
-        engagement_score=engagement_score
+        engagement_score=engagement_score,
+        today_completed_modules=today_completed_modules
     )
 
     behavior = BehaviorAnalysis(

@@ -12,6 +12,7 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     display_name = Column(String(100), nullable=True)
     image_path = Column(String(255), nullable=True, default="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix")
+    learning_target = Column(String(20), default="fokus", nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 

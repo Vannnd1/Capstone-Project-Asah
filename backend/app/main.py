@@ -10,6 +10,17 @@ from app.routes.learning import router as learning_router
 # Initialize database tables
 Base.metadata.create_all(bind=engine)
 
+def ensure_schema_migrations():
+    from sqlalchemy import text
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN learning_target VARCHAR(20) DEFAULT 'fokus'"))
+            conn.commit()
+    except Exception:
+        pass
+
+ensure_schema_migrations()
+
 # Seed demo user if database is empty
 def seed_demo_user():
     db = SessionLocal()

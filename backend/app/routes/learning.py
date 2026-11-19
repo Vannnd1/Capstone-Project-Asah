@@ -12,6 +12,7 @@ from app.schemas.learning import (
     RecommendationResponse,
     ActivityCreate,
     ActivityResponse,
+    TargetUpdateRequest,
 )
 from app.services.auth_service import get_current_user
 from app.services.ml_service import calculate_user_telemetry
@@ -122,3 +123,14 @@ def get_activities(
         Activity.user_id == current_user.id
     ).order_by(Activity.timestamp.desc()).limit(limit).all()
     return [ActivityResponse.model_validate(a) for a in activities]
+
+@router.put("/target")
+def update_target(
+    target_data: TargetUpdateRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    current_user.learning_target = target_data.learning_target
+    db.commit()
+    db.refresh(current_user)
+    return {"status": "success", "learning_target": current_user.learning_target}

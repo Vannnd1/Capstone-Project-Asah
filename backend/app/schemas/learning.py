@@ -9,6 +9,10 @@ class UserMetrics(BaseModel):
     days_active: int
     max_daily_completions: int
     engagement_score: int
+    today_completed_modules: Optional[int] = 0
+
+class TargetUpdateRequest(BaseModel):
+    learning_target: str
 
 class BehaviorAnalysis(BaseModel):
     consistency: str
