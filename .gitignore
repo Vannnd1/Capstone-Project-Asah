@@ -37,3 +37,15 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.db
+*.sqlite3
+
+# Mock files
+mock-server.js
+mock_db.json
+
