@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { User, Camera, Save, ArrowLeft, Mail, AlertCircle, Upload } from 'lucide-react'; // Tambah icon Upload
 import { useNavigate } from 'react-router-dom'; 
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import HeaderAvatar from '../components/HeaderAvatar';
-import { updateUserProfile } from '../services/ApiService'; 
+import { updateUserProfile, getStoredUser } from '../services/ApiService'; 
 
 const ProfileSettings = ({ onLogout }) => {
     const { t } = useApp();
+    const { user } = useAuth();
     const navigate = useNavigate();
     
     const [name, setName] = useState('');
@@ -17,14 +19,16 @@ const ProfileSettings = ({ onLogout }) => {
     const [errorMsg, setErrorMsg] = useState('');
 
     useEffect(() => {
-        const currentName = localStorage.getItem('userName') || 'Siswa';
-        const currentEmail = localStorage.getItem('userEmail') || 'user@example.com';
-        const currentAvatar = localStorage.getItem('userAvatarPath') || '/assets/avatar-default.png';
+        const storedUser = getStoredUser() || {};
+        const activeUser = user || storedUser;
+        const currentName = activeUser.display_name || activeUser.username || localStorage.getItem('userName') || 'Siswa';
+        const currentEmail = activeUser.email || localStorage.getItem('userEmail') || 'user@example.com';
+        const currentAvatar = activeUser.image_path || localStorage.getItem('userAvatarPath') || 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix';
         
         setName(currentName);
         setEmail(currentEmail);
         setAvatarUrl(currentAvatar);
-    }, []);
+    }, [user]);
 
     // Handle saat user memilih file gambar
     const handleFileChange = (e) => {
@@ -42,18 +46,24 @@ const ProfileSettings = ({ onLogout }) => {
         setErrorMsg('');
 
         try {
-            const userId = localStorage.getItem('userId');
-            if (!userId) throw new Error("User ID hilang. Login ulang.");
+            const storedUser = getStoredUser() || {};
+            const activeUser = user || storedUser;
+            const userId = activeUser.id || localStorage.getItem('userId') || 1;
 
             // Panggil API dengan File
             const response = await updateUserProfile(userId, name, selectedFile);
             
             // Ambil URL gambar baru dari respons backend (jika ada update foto)
-            const newAvatarPath = response.data.image_path || avatarUrl;
+            const newAvatarPath = response?.data?.image_path || avatarUrl;
 
             // Update LocalStorage
+            localStorage.setItem('userId', String(userId));
             localStorage.setItem('userName', name);
             localStorage.setItem('userAvatarPath', newAvatarPath);
+            
+            const updatedUser = { ...storedUser, display_name: name };
+            if (newAvatarPath) updatedUser.image_path = newAvatarPath;
+            localStorage.setItem('user', JSON.stringify(updatedUser));
             
             alert("Profil berhasil disimpan!");
             window.location.reload(); 

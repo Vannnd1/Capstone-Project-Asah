@@ -29,6 +29,13 @@ export const AuthProvider = ({ children }) => {
           // Validate token by calling /auth/me
           const currentUser = await api.getCurrentUser();
           setUser(currentUser);
+          if (currentUser) {
+            localStorage.setItem("user", JSON.stringify(currentUser));
+            localStorage.setItem("userId", String(currentUser.id || ""));
+            localStorage.setItem("userName", currentUser.display_name || currentUser.username || "");
+            localStorage.setItem("userEmail", currentUser.email || "");
+            localStorage.setItem("userAvatarPath", currentUser.image_path || "");
+          }
         } else {
           setUser(null);
         }
@@ -37,6 +44,10 @@ export const AuthProvider = ({ children }) => {
         console.error("Session restore failed:", err);
         localStorage.removeItem("access_token");
         localStorage.removeItem("user");
+        localStorage.removeItem("userId");
+        localStorage.removeItem("userName");
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("userAvatarPath");
         setUser(null);
       } finally {
         setIsLoading(false);

@@ -62,7 +62,13 @@ export const register = async (userData) => {
     // Store token and user data
     if (data.access_token) {
         localStorage.setItem('access_token', data.access_token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        if (data.user) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('userId', String(data.user.id || ''));
+            localStorage.setItem('userName', data.user.display_name || data.user.username || '');
+            localStorage.setItem('userEmail', data.user.email || '');
+            localStorage.setItem('userAvatarPath', data.user.image_path || '');
+        }
     }
 
     return data;
@@ -82,7 +88,13 @@ export const login = async (username, password) => {
     // Store token and user data
     if (data.access_token) {
         localStorage.setItem('access_token', data.access_token);
-        localStorage.setItem('user', JSON.stringify(data.user));
+        if (data.user) {
+            localStorage.setItem('user', JSON.stringify(data.user));
+            localStorage.setItem('userId', String(data.user.id || ''));
+            localStorage.setItem('userName', data.user.display_name || data.user.username || '');
+            localStorage.setItem('userEmail', data.user.email || '');
+            localStorage.setItem('userAvatarPath', data.user.image_path || '');
+        }
     }
 
     return data;
@@ -98,6 +110,10 @@ export const logout = async () => {
         // Always clear local storage
         localStorage.removeItem('access_token');
         localStorage.removeItem('user');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('userAvatarPath');
     }
 };
 
