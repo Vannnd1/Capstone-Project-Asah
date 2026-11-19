@@ -1,6 +1,6 @@
 // AI Learning Insight - API Service
-// Base URL untuk FastAPI backend
-const BASE_URL = 'http://localhost:8000';
+// Base URL untuk FastAPI backend (mendukung environment variable untuk deployment)
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
 
 // === HELPER FUNCTIONS ===
 
