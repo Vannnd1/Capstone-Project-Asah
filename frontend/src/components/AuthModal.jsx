@@ -27,7 +27,13 @@ const RegisterForm = ({ onRegisterSuccess }) => {
     setLoading(true);
 
     try {
-      await register(formData);
+      await register({
+        ...formData,
+        username: formData.username.trim(),
+        email: formData.email.trim(),
+        password: formData.password.trim(),
+        display_name: formData.display_name.trim(),
+      });
       onRegisterSuccess(true); // Login langsung setelah register
     } catch (err) {
       setError(err.message || "Pendaftaran gagal. Silakan coba lagi.");
@@ -138,13 +144,19 @@ const LoginFormComponent = ({ onLogin }) => {
     setLoading(true);
 
     try {
-      await login(username, password);
+      await login(username.trim(), password.trim());
       onLogin(true);
     } catch (err) {
       setError(err.message || "Login gagal. Silakan periksa kembali.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleFillDemo = () => {
+    setUsername("siswa_demo");
+    setPassword("password123");
+    setError("");
   };
 
   return (
@@ -154,6 +166,21 @@ const LoginFormComponent = ({ onLogin }) => {
           {error}
         </div>
       )}
+
+      {/* Info & Tombol Demo Account */}
+      <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-center justify-between text-xs text-blue-700 dark:text-blue-300">
+        <div>
+          <span className="font-semibold block">Akun Demo:</span>
+          <span>User: <code className="bg-blue-100 dark:bg-blue-800/60 px-1 py-0.5 rounded font-mono">siswa_demo</code> | Pass: <code className="bg-blue-100 dark:bg-blue-800/60 px-1 py-0.5 rounded font-mono">password123</code></span>
+        </div>
+        <button
+          type="button"
+          onClick={handleFillDemo}
+          className="ml-2 px-2.5 py-1.5 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition shrink-0"
+        >
+          Isi Cepat
+        </button>
+      </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Username

@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
@@ -9,24 +10,27 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 def register(user_data: UserRegister, db: Session = Depends(get_db)):
-    # Check if username exists
-    if db.query(User).filter(User.username == user_data.username).first():
+    clean_username = user_data.username.strip()
+    clean_email = user_data.email.strip().lower()
+
+    # Check if username exists (case-insensitive)
+    if db.query(User).filter(func.lower(User.username) == clean_username.lower()).first():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username sudah digunakan, silakan pilih username lain"
         )
-    # Check if email exists
-    if db.query(User).filter(User.email == user_data.email).first():
+    # Check if email exists (case-insensitive)
+    if db.query(User).filter(func.lower(User.email) == clean_email).first():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email sudah terdaftar"
         )
 
     new_user = User(
-        username=user_data.username,
-        email=user_data.email,
-        hashed_password=hash_password(user_data.password),
-        display_name=user_data.display_name or user_data.username,
+        username=clean_username,
+        email=clean_email,
+        hashed_password=hash_password(user_data.password.strip()),
+        display_name=(user_data.display_name or clean_username).strip(),
     )
     db.add(new_user)
     db.commit()
@@ -42,12 +46,15 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=AuthResponse)
 def login(login_data: UserLogin, db: Session = Depends(get_db)):
-    # Find user by username or email
+    clean_identifier = login_data.username.strip().lower()
+    clean_password = login_data.password.strip()
+
+    # Find user by username or email (case-insensitive)
     user = db.query(User).filter(
-        (User.username == login_data.username) | (User.email == login_data.username)
+        (func.lower(User.username) == clean_identifier) | (func.lower(User.email) == clean_identifier)
     ).first()
 
-    if not user or not verify_password(login_data.password, user.hashed_password):
+    if not user or not verify_password(clean_password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Username atau password salah"
