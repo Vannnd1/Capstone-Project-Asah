@@ -212,46 +212,42 @@ export const updateLearningTarget = async (target) => {
     }
 };
 
-// === PROFILE API (Placeholder - Backend may not support this) ===
+// === PROFILE API ===
 
 /**
- * Update user profile (name and avatar)
- * Note: This endpoint may not be implemented in the backend yet
- * For now, it just updates localStorage
+ * Update user profile (name, email, and avatar)
+ * @param {Object|number} dataOrUserId - Profile payload { display_name, email, image_path } or user ID
+ * @param {string} [name] - Optional name parameter (legacy)
+ * @param {string|File} [avatar] - Optional avatar parameter (legacy)
+ * @param {string} [email] - Optional email parameter (legacy)
  */
-export const updateUserProfile = async (userId, name, file) => {
-    // If backend supports profile update, uncomment below:
-    /*
-    const formData = new FormData();
-    formData.append('user_id', userId);
-    formData.append('name', name);
-    if (file) {
-        formData.append('avatar', file);
+export const updateUserProfile = async (dataOrUserId, name, avatar, email) => {
+    let payload = {};
+    if (typeof dataOrUserId === 'object' && dataOrUserId !== null) {
+        payload = { ...dataOrUserId };
+    } else {
+        if (name !== undefined) payload.display_name = name;
+        if (email !== undefined) payload.email = email;
+        if (typeof avatar === 'string') payload.image_path = avatar;
     }
-    
-    const response = await fetch(`${BASE_URL}/api/profile/update`, {
-        method: 'PUT',
-        headers: {
-            'Authorization': `Bearer ${getToken()}`,
-        },
-        body: formData,
-    });
-    
-    if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Gagal update profil');
-    }
-    return response.json();
-    */
 
-    // For now, just return a mock success response
-    // The actual update happens in localStorage on the frontend
-    return {
-        data: {
-            name: name,
-            image_path: file ? URL.createObjectURL(file) : null
+    const data = await apiRequest('/auth/profile', {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+    });
+
+    // Update stored user in localStorage
+    if (data) {
+        localStorage.setItem('user', JSON.stringify(data));
+        localStorage.setItem('userId', String(data.id || ''));
+        localStorage.setItem('userName', data.display_name || data.username || '');
+        localStorage.setItem('userEmail', data.email || '');
+        if (data.image_path) {
+            localStorage.setItem('userAvatarPath', data.image_path);
         }
-    };
+    }
+
+    return data;
 };
 
 // === UTILITY EXPORTS ===

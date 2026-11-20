@@ -63,6 +63,21 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(learning_router)
 
+from app.schemas.auth import UserProfileUpdate, UserResponse
+from app.services.auth_service import get_current_user
+from app.database import get_db
+from fastapi import Depends
+from sqlalchemy.orm import Session
+from app.routes.auth import update_profile as auth_update_profile
+
+@app.put("/api/profile/update", response_model=UserResponse, tags=["Profile"])
+def update_profile_alias(
+    profile_data: UserProfileUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    return auth_update_profile(profile_data, current_user, db)
+
 @app.get("/", tags=["Health Check"])
 def root():
     return {

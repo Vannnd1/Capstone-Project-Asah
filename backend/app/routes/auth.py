@@ -3,7 +3,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
-from app.schemas.auth import UserRegister, UserLogin, UserResponse, AuthResponse
+from app.schemas.auth import UserRegister, UserLogin, UserProfileUpdate, UserResponse, AuthResponse
 from app.services.auth_service import hash_password, verify_password, create_access_token, get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -74,4 +74,51 @@ def logout(current_user: User = Depends(get_current_user)):
 
 @router.get("/me", response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):
+    return UserResponse.model_validate(current_user)
+
+@router.put("/profile", response_model=UserResponse)
+@router.put("/me", response_model=UserResponse)
+def update_profile(
+    profile_data: UserProfileUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Update display name
+    if profile_data.display_name is not None:
+        clean_name = profile_data.display_name.strip()
+        if not clean_name:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Nama tidak boleh kosong"
+            )
+        current_user.display_name = clean_name
+
+    # Update email
+    if profile_data.email is not None:
+        clean_email = profile_data.email.strip().lower()
+        if not clean_email:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email tidak boleh kosong"
+            )
+        # Check if email is already used by someone else
+        existing_user = db.query(User).filter(
+            func.lower(User.email) == clean_email,
+            User.id != current_user.id
+        ).first()
+        if existing_user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email sudah digunakan oleh akun lain"
+            )
+        current_user.email = clean_email
+
+    # Update avatar image_path
+    if profile_data.image_path is not None:
+        clean_image = profile_data.image_path.strip()
+        if clean_image:
+            current_user.image_path = clean_image
+
+    db.commit()
+    db.refresh(current_user)
     return UserResponse.model_validate(current_user)

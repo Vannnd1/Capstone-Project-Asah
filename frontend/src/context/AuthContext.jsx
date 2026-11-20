@@ -102,6 +102,22 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // Update profile function
+  const updateProfile = useCallback(async (profileData) => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      const updatedUser = await api.updateUserProfile(profileData);
+      setUser(updatedUser);
+      return updatedUser;
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   // Clear error
   const clearError = useCallback(() => {
     setError(null);
@@ -115,6 +131,7 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
+    updateProfile,
     clearError,
   };
 

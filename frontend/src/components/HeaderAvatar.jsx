@@ -1,17 +1,18 @@
 import React from 'react';
 import AvatarDropdown from './AvatarDropdown';
-
+import { useAuth } from '../context/AuthContext';
 import { mockUser } from '../mockData'; 
 
 const HeaderAvatar = ({ onLogout, children }) => { 
+    const { user } = useAuth();
     
     // Fallback yang aman jika mockUser hilang
     const defaultMockUser = { display_name: 'Siswa', image_path: '/assets/avatar-default.png' };
     const userMock = mockUser || defaultMockUser;
     
-    // KUNCI DATA PERSONALISASI (Menggunakan data yang diimpor)
-    const userName = localStorage.getItem('userName') || userMock.display_name || 'Siswa'; 
-    const userImagePath = localStorage.getItem('userAvatarPath') || userMock.image_path || defaultMockUser.image_path; 
+    // KUNCI DATA PERSONALISASI (Reactive terhadap AuthContext)
+    const userName = user?.display_name || user?.username || localStorage.getItem('userName') || userMock.display_name || 'Siswa'; 
+    const userImagePath = user?.image_path || localStorage.getItem('userAvatarPath') || userMock.image_path || defaultMockUser.image_path; 
 
     return (
         <header className="flex justify-between items-start mb-8"> 

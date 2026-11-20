@@ -12,6 +12,11 @@ class UserLogin(BaseModel):
     username: str
     password: str
 
+class UserProfileUpdate(BaseModel):
+    display_name: Optional[str] = None
+    email: Optional[str] = None
+    image_path: Optional[str] = None
+
 class UserResponse(BaseModel):
     id: int
     username: str
