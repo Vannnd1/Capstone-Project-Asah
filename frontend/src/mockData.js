@@ -3,7 +3,7 @@ export const mockUser = {
   id: 1,
   display_name: "Siswa Teladan",
   email: "siswa@dicoding.com",
-  image_path: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix",
+  image_path: "/avatars/netflix/nf-1.png",
   user_role: "student"
 };
 

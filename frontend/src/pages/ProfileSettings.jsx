@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { User, Camera, Save, ArrowLeft, Mail, AlertCircle, Upload, CheckCircle } from 'lucide-react';
+import { User, Camera, Save, ArrowLeft, Mail, AlertCircle, Upload, CheckCircle, Film, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; 
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import HeaderAvatar from '../components/HeaderAvatar';
+import NetflixAvatarPickerModal from '../components/NetflixAvatarPickerModal';
 import { getStoredUser } from '../services/ApiService'; 
+import { DEFAULT_AVATARS } from '../data/defaultAvatars';
+
+const QUICK_AVATARS = [
+    { name: 'Classic Red', path: '/avatars/netflix/nf-1.png' },
+    { name: 'Blue Champion', path: '/avatars/netflix/nf-2.png' },
+    { name: 'Sunny Yellow', path: '/avatars/netflix/nf-3.png' },
+    { name: 'Emerald Hero', path: '/avatars/netflix/nf-4.png' },
+    { name: 'Bolt Bot', path: '/avatars/robots/robot-bolt.svg' },
+    { name: 'Felix Siswa', path: '/avatars/cartoons/avatar-felix.svg' },
+];
 
 const ProfileSettings = ({ onLogout }) => {
     const { t } = useApp();
@@ -15,6 +26,7 @@ const ProfileSettings = ({ onLogout }) => {
     const [email, setEmail] = useState('');
     const [avatarUrl, setAvatarUrl] = useState('');
     const [selectedFile, setSelectedFile] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
@@ -77,6 +89,14 @@ const ProfileSettings = ({ onLogout }) => {
             setErrorMsg('');
             setSuccessMsg('');
         }
+    };
+
+    // Handle saat user memilih avatar preset bawaan
+    const handleSelectPresetAvatar = (path) => {
+        setAvatarUrl(path);
+        setSelectedFile(null); // Reset upload file kustom
+        setErrorMsg('');
+        setSuccessMsg('Avatar kartun dipilih! Klik "Simpan Perubahan" untuk menerapkan.');
     };
 
     const handleSave = async (e) => {
@@ -165,30 +185,63 @@ const ProfileSettings = ({ onLogout }) => {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 
-                {/* KOLOM KIRI: Upload Foto */}
+                {/* KOLOM KIRI: Foto Profil & Avatar Bawaan */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm p-6 flex flex-col items-center text-center h-fit">
-                    <div className="relative group mb-6">
+                    {/* Avatar Preview */}
+                    <div className="relative group mb-3">
                         <img 
                             src={avatarUrl} 
-                            alt="Preview" 
-                            className="w-32 h-32 rounded-full object-cover border-4 border-gray-100 dark:border-gray-700 shadow-md"
+                            alt="Preview Foto Profil" 
+                            className="w-32 h-32 rounded-full object-cover border-4 border-gray-100 dark:border-gray-700 shadow-lg transition-transform duration-300 group-hover:scale-105"
+                            onError={(e) => {
+                                e.target.src = 'https://api.dicebear.com/7.x/bottts/svg?seed=fallback';
+                            }}
                         />
-                        {/* INPUT FILE TERSEMBUNYI DI BALIK IKON KAMERA */}
-                        <label className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
-                            <Camera className="text-white" size={32} />
-                            <input 
-                                type="file" 
-                                className="hidden" 
-                                accept="image/*"
-                                onChange={handleFileChange}
-                            />
-                        </label>
+                        {/* Tombol Kamera di Atas Avatar */}
+                        <button
+                            type="button"
+                            onClick={() => setIsModalOpen(true)}
+                            className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
+                            title="Ganti Avatar"
+                        >
+                            <Film size={26} className="mb-1 text-white" />
+                            <span className="text-[11px] font-bold">Ganti Avatar</span>
+                        </button>
                     </div>
 
-                    <div className="w-full">
-                        <label className="flex items-center justify-center gap-2 w-full py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition text-sm font-medium">
-                            <Upload size={16} />
-                            {selectedFile ? 'Ganti Foto' : 'Pilih Foto'}
+                    {/* Status Badge */}
+                    <div className="mb-4">
+                        {selectedFile ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                                Foto Kustom (Belum Disimpan)
+                            </span>
+                        ) : avatarUrl?.startsWith('/avatars/') ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
+                                <Sparkles size={11} /> Avatar Kartun Bawaan
+                            </span>
+                        ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                Avatar Profil Aktif
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="w-full space-y-2.5">
+                        {/* Tombol 1: Buka Galeri Avatar Bawaan (Netflix) */}
+                        <button
+                            type="button"
+                            onClick={() => setIsModalOpen(true)}
+                            className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white rounded-lg transition text-sm font-semibold shadow-sm shadow-red-500/20 active:scale-[0.98]"
+                        >
+                            <Film size={16} />
+                            Pilih Avatar Kartun (Netflix)
+                        </button>
+
+                        {/* Tombol 2: Upload Foto Sendiri */}
+                        <label className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition text-xs font-medium">
+                            <Upload size={14} />
+                            {selectedFile ? 'Ganti File Foto' : 'Atau Upload Foto Sendiri'}
                             <input 
                                 type="file" 
                                 className="hidden" 
@@ -196,7 +249,53 @@ const ProfileSettings = ({ onLogout }) => {
                                 onChange={handleFileChange}
                             />
                         </label>
-                        <p className="text-xs text-gray-400 mt-2">Format: JPG, PNG. Otomatis dioptimalkan.</p>
+                        <p className="text-[11px] text-gray-400">Pilih dari koleksi kartun bawaan atau upload file JPG/PNG.</p>
+                    </div>
+
+                    {/* Quick Pick: Pilihan Cepat Netflix Avatar */}
+                    <div className="w-full mt-6 pt-5 border-t border-gray-100 dark:border-gray-700 text-left">
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                <Sparkles size={12} className="text-amber-500" /> Pilihan Populer
+                            </span>
+                            <button
+                                type="button"
+                                onClick={() => setIsModalOpen(true)}
+                                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                            >
+                                Lihat Semua ({DEFAULT_AVATARS.length})
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-6 gap-2">
+                            {QUICK_AVATARS.map((item) => {
+                                const isSelected = avatarUrl === item.path && !selectedFile;
+                                return (
+                                    <button
+                                        key={item.path}
+                                        type="button"
+                                        title={item.name}
+                                        onClick={() => handleSelectPresetAvatar(item.path)}
+                                        className={`group relative aspect-square rounded-lg overflow-hidden border-2 transition-all hover:scale-110 ${
+                                            isSelected
+                                                ? 'border-red-500 ring-2 ring-red-500/40 scale-105 shadow-md'
+                                                : 'border-gray-200 dark:border-gray-700 hover:border-gray-400'
+                                        }`}
+                                    >
+                                        <img 
+                                            src={item.path} 
+                                            alt={item.name} 
+                                            className="w-full h-full object-cover"
+                                        />
+                                        {isSelected && (
+                                            <div className="absolute inset-0 bg-red-600/30 flex items-center justify-center">
+                                                <CheckCircle size={14} className="text-white drop-shadow" />
+                                            </div>
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
 
@@ -256,6 +355,14 @@ const ProfileSettings = ({ onLogout }) => {
                     </form>
                 </div>
             </div>
+
+            {/* Modal Pemilihan Avatar Bawaan (Gaya Netflix) */}
+            <NetflixAvatarPickerModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                currentAvatar={avatarUrl}
+                onSelectAvatar={(selectedPath) => handleSelectPresetAvatar(selectedPath)}
+            />
         </div>
     );
 };
