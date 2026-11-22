@@ -1,7 +1,16 @@
 import React, { useState } from "react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
-import { Eye, EyeOff, X } from "lucide-react";
+import { Eye, EyeOff, X, Check } from "lucide-react";
+
+const REGISTER_AVATARS = [
+  { name: 'Felix Pelajar', path: '/avatars/characters/char-felix.svg' },
+  { name: 'Aneka Desain', path: '/avatars/characters/char-aneka.svg' },
+  { name: 'Bolt Bot', path: '/avatars/robots/robot-bolt.svg' },
+  { name: 'Senyum Ceria', path: '/avatars/emojis/emoji-happy.svg' },
+  { name: 'Alex Pengelana', path: '/avatars/adventurers/adv-alex.svg' },
+  { name: 'Gummy Biru', path: '/avatars/creatures/blob-gummy.svg' },
+];
 
 // --- Sub-Komponen: Register Form ---
 const RegisterForm = ({ onRegisterSuccess }) => {
@@ -13,6 +22,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
     password: "",
     display_name: "",
   });
+  const [selectedAvatar, setSelectedAvatar] = useState('/avatars/characters/char-felix.svg');
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -33,6 +43,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
         email: formData.email.trim(),
         password: formData.password.trim(),
         display_name: formData.display_name.trim(),
+        image_path: selectedAvatar,
       });
       onRegisterSuccess(true); // Login langsung setelah register
     } catch (err) {
@@ -114,6 +125,39 @@ const RegisterForm = ({ onRegisterSuccess }) => {
           >
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
+        </div>
+      </div>
+
+      {/* Pilihan Avatar Kartun Bawaan */}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center justify-between">
+          <span>Pilih Avatar Kartun:</span>
+          <span className="text-[11px] text-blue-600 dark:text-blue-400">Bisa diubah nanti</span>
+        </label>
+        <div className="grid grid-cols-6 gap-2">
+          {REGISTER_AVATARS.map((av) => {
+            const isSel = selectedAvatar === av.path;
+            return (
+              <button
+                key={av.path}
+                type="button"
+                onClick={() => setSelectedAvatar(av.path)}
+                title={av.name}
+                className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all hover:scale-105 cursor-pointer ${
+                  isSel
+                    ? "border-red-500 ring-2 ring-red-500/40 scale-105 shadow-md"
+                    : "border-gray-200 dark:border-gray-700 hover:border-gray-400"
+                }`}
+              >
+                <img src={av.path} alt={av.name} className="w-full h-full object-cover" />
+                {isSel && (
+                  <div className="absolute inset-0 bg-red-600/30 flex items-center justify-center">
+                    <Check size={14} className="text-white drop-shadow" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 

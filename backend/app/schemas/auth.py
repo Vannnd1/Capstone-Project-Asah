@@ -7,6 +7,7 @@ class UserRegister(BaseModel):
     email: str
     password: str
     display_name: Optional[str] = None
+    image_path: Optional[str] = None
 
 class UserLogin(BaseModel):
     username: str

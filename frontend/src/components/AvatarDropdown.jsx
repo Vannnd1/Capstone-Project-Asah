@@ -9,6 +9,11 @@ const AvatarDropdown = ({ userImagePath, userName, onLogout }) => {
     // --- STATE UNTUK ERROR GAMBAR ---
     const [imgError, setImgError] = useState(false);
 
+    // Reset error jika gambar profil berubah
+    useEffect(() => {
+        setImgError(false);
+    }, [userImagePath]);
+
     // Toggle dropdown
     const toggleDropdown = () => setIsOpen(!isOpen);
 

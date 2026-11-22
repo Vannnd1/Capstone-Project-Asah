@@ -1,9 +1,40 @@
-import { Moon, Sun, Globe, Bell, Monitor } from 'lucide-react';
+import React, { useState } from 'react';
+import { Moon, Sun, Globe, Bell, Monitor, User, Palette, Sparkles, CheckCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 import HeaderAvatar from '../components/HeaderAvatar';
+import AvatarPickerModal from '../components/AvatarPickerModal';
+import { mockUser } from '../mockData';
 
 const Settings = ({ onLogout }) => {
     const { darkMode, toggleTheme, language, changeLanguage, t } = useApp();
+    const { user, updateProfile } = useAuth();
+    
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [successMsg, setSuccessMsg] = useState('');
+
+    const userName = user?.display_name || user?.username || localStorage.getItem('userName') || mockUser.display_name || 'Siswa';
+    const userEmail = user?.email || localStorage.getItem('userEmail') || mockUser.email || 'user@example.com';
+    const currentAvatar = user?.image_path || localStorage.getItem('userAvatarPath') || mockUser.image_path || '/avatars/characters/char-felix.svg';
+
+    const handleSelectAvatar = async (path) => {
+        try {
+            await updateProfile({
+                display_name: userName,
+                email: userEmail,
+                image_path: path,
+            });
+            localStorage.setItem('userAvatarPath', path);
+            setSuccessMsg('Avatar berhasil diubah dan disimpan!');
+            setTimeout(() => setSuccessMsg(''), 4000);
+        } catch (err) {
+            console.warn('Fallback update avatar di Settings:', err);
+            localStorage.setItem('userAvatarPath', path);
+            setSuccessMsg('Avatar berhasil diperbarui!');
+            setTimeout(() => setSuccessMsg(''), 4000);
+        }
+    };
 
     return (
         <div className="space-y-6 animate-in fade-in duration-500 pb-10">
@@ -14,12 +45,69 @@ const Settings = ({ onLogout }) => {
                         <Monitor className="text-blue-600" />
                         {t('settings')}
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400">Kelola preferensi tampilan dan bahasa aplikasi.</p>
+                    <p className="text-gray-500 dark:text-gray-400">Kelola profil, tampilan, dan preferensi akunmu.</p>
                 </div>
             </HeaderAvatar>
 
+            {/* Alert Sukses */}
+            {successMsg && (
+                <div className="max-w-3xl bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800 px-4 py-3 rounded-lg flex items-center gap-2">
+                    <CheckCircle size={18} className="shrink-0" /> <span>{successMsg}</span>
+                </div>
+            )}
+
             <div className="max-w-3xl">
-                {/* --- CARD PENGATURAN --- */}
+                {/* --- 1. CARD PROFIL & AVATAR BAWAAN --- */}
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm mb-6">
+                    <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 flex items-center justify-between">
+                        <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                            <User size={18} className="text-blue-600" /> Profil Akun & Avatar
+                        </h3>
+                        <Link 
+                            to="/settings/profile" 
+                            className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:underline flex items-center gap-1"
+                        >
+                            Edit Profil Lengkap
+                        </Link>
+                    </div>
+
+                    <div className="p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="relative group cursor-pointer" onClick={() => setIsModalOpen(true)}>
+                                <img 
+                                    src={currentAvatar} 
+                                    alt="Avatar Profil" 
+                                    className="w-16 h-16 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600 shadow-md transition-transform group-hover:scale-105"
+                                    onError={(e) => {
+                                        e.target.src = 'https://api.dicebear.com/7.x/bottts/svg?seed=fallback';
+                                    }}
+                                />
+                                <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Palette size={18} className="text-white" />
+                                </div>
+                            </div>
+                            <div>
+                                <p className="font-bold text-gray-900 dark:text-white text-base">{userName}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">{userEmail}</p>
+                                <span className="inline-flex items-center gap-1 mt-1 text-[11px] text-gray-400">
+                                    <Sparkles size={11} className="text-amber-500" /> Klik foto atau tombol untuk ganti avatar
+                                </span>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <button
+                                type="button"
+                                onClick={() => setIsModalOpen(true)}
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm shadow-blue-500/20 transition active:scale-95"
+                            >
+                                <Palette size={14} /> Pilih Avatar Kartun
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* --- 2. CARD PENGATURAN SISTEM --- */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm">
                     
                     {/* Header Card */}
@@ -93,6 +181,14 @@ const Settings = ({ onLogout }) => {
                     </div>
                 </div>
             </div>
+
+            {/* Modal Pemilihan Avatar Kartun Bawaan */}
+            <AvatarPickerModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                currentAvatar={currentAvatar}
+                onSelectAvatar={handleSelectAvatar}
+            />
         </div>
     );
 };

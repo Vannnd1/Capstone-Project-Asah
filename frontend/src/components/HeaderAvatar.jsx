@@ -7,7 +7,7 @@ const HeaderAvatar = ({ onLogout, children }) => {
     const { user } = useAuth();
     
     // Fallback yang aman jika mockUser hilang
-    const defaultMockUser = { display_name: 'Siswa', image_path: '/avatars/netflix/nf-1.png' };
+    const defaultMockUser = { display_name: 'Siswa', image_path: '/avatars/characters/char-felix.svg' };
     const userMock = mockUser || defaultMockUser;
     
     // KUNCI DATA PERSONALISASI (Reactive terhadap AuthContext)

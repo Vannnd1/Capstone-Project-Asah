@@ -3,7 +3,7 @@ export const mockUser = {
   id: 1,
   display_name: "Siswa Teladan",
   email: "siswa@dicoding.com",
-  image_path: "/avatars/netflix/nf-1.png",
+  image_path: "/avatars/characters/char-felix.svg",
   user_role: "student"
 };
 

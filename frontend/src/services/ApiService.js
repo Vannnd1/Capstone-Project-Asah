@@ -231,23 +231,39 @@ export const updateUserProfile = async (dataOrUserId, name, avatar, email) => {
         if (typeof avatar === 'string') payload.image_path = avatar;
     }
 
-    const data = await apiRequest('/auth/profile', {
-        method: 'PUT',
-        body: JSON.stringify(payload),
-    });
+    try {
+        const data = await apiRequest('/auth/profile', {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+        });
 
-    // Update stored user in localStorage
-    if (data) {
-        localStorage.setItem('user', JSON.stringify(data));
-        localStorage.setItem('userId', String(data.id || ''));
-        localStorage.setItem('userName', data.display_name || data.username || '');
-        localStorage.setItem('userEmail', data.email || '');
-        if (data.image_path) {
-            localStorage.setItem('userAvatarPath', data.image_path);
+        // Update stored user in localStorage
+        if (data) {
+            localStorage.setItem('user', JSON.stringify(data));
+            localStorage.setItem('userId', String(data.id || ''));
+            localStorage.setItem('userName', data.display_name || data.username || '');
+            localStorage.setItem('userEmail', data.email || '');
+            if (data.image_path) {
+                localStorage.setItem('userAvatarPath', data.image_path);
+            }
         }
-    }
 
-    return data;
+        return data;
+    } catch (err) {
+        console.warn('API updateUserProfile fallback to localStorage:', err);
+        const storedUser = getStoredUser() || {};
+        const updated = {
+            ...storedUser,
+            display_name: payload.display_name || storedUser.display_name || localStorage.getItem('userName') || 'Siswa',
+            email: payload.email || storedUser.email || localStorage.getItem('userEmail') || 'user@example.com',
+            image_path: payload.image_path || storedUser.image_path || localStorage.getItem('userAvatarPath') || '/avatars/characters/char-felix.svg',
+        };
+        localStorage.setItem('user', JSON.stringify(updated));
+        if (updated.display_name) localStorage.setItem('userName', updated.display_name);
+        if (updated.email) localStorage.setItem('userEmail', updated.email);
+        if (updated.image_path) localStorage.setItem('userAvatarPath', updated.image_path);
+        return updated;
+    }
 };
 
 // === UTILITY EXPORTS ===

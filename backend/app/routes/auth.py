@@ -31,6 +31,7 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
         email=clean_email,
         hashed_password=hash_password(user_data.password.strip()),
         display_name=(user_data.display_name or clean_username).strip(),
+        image_path=(user_data.image_path or "/avatars/characters/char-felix.svg").strip(),
     )
     db.add(new_user)
     db.commit()

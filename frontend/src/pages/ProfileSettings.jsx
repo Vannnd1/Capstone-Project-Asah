@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { User, Camera, Save, ArrowLeft, Mail, AlertCircle, Upload, CheckCircle, Film, Sparkles } from 'lucide-react';
+import { User, Camera, Save, ArrowLeft, Mail, AlertCircle, Upload, CheckCircle, Palette, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom'; 
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
 import HeaderAvatar from '../components/HeaderAvatar';
-import NetflixAvatarPickerModal from '../components/NetflixAvatarPickerModal';
+import AvatarPickerModal from '../components/AvatarPickerModal';
 import { getStoredUser } from '../services/ApiService'; 
 import { DEFAULT_AVATARS } from '../data/defaultAvatars';
 
 const QUICK_AVATARS = [
-    { name: 'Classic Red', path: '/avatars/netflix/nf-1.png' },
-    { name: 'Blue Champion', path: '/avatars/netflix/nf-2.png' },
-    { name: 'Sunny Yellow', path: '/avatars/netflix/nf-3.png' },
-    { name: 'Emerald Hero', path: '/avatars/netflix/nf-4.png' },
+    { name: 'Felix Pelajar', path: '/avatars/characters/char-felix.svg' },
+    { name: 'Aneka Desain', path: '/avatars/characters/char-aneka.svg' },
     { name: 'Bolt Bot', path: '/avatars/robots/robot-bolt.svg' },
-    { name: 'Felix Siswa', path: '/avatars/cartoons/avatar-felix.svg' },
+    { name: 'Senyum Ceria', path: '/avatars/emojis/emoji-happy.svg' },
+    { name: 'Alex Pengelana', path: '/avatars/adventurers/adv-alex.svg' },
+    { name: 'Blobby Pink', path: '/avatars/creatures/blob-blobby.svg' },
 ];
 
 const ProfileSettings = ({ onLogout }) => {
@@ -92,11 +92,30 @@ const ProfileSettings = ({ onLogout }) => {
     };
 
     // Handle saat user memilih avatar preset bawaan
-    const handleSelectPresetAvatar = (path) => {
+    const handleSelectPresetAvatar = async (path) => {
         setAvatarUrl(path);
         setSelectedFile(null); // Reset upload file kustom
         setErrorMsg('');
-        setSuccessMsg('Avatar kartun dipilih! Klik "Simpan Perubahan" untuk menerapkan.');
+        setSuccessMsg('Menyimpan avatar...');
+
+        try {
+            const cleanName = (name || '').trim() || localStorage.getItem('userName') || 'Siswa';
+            const cleanEmail = (email || '').trim().toLowerCase() || localStorage.getItem('userEmail') || 'user@example.com';
+            
+            // Simpan langsung ke backend dan context
+            await updateProfile({
+                display_name: cleanName,
+                email: cleanEmail,
+                image_path: path,
+            });
+
+            localStorage.setItem('userAvatarPath', path);
+            setSuccessMsg('Avatar kartun berhasil dipilih dan disimpan!');
+        } catch (err) {
+            console.warn('Gagal auto-save avatar, fallback ke localStorage:', err);
+            localStorage.setItem('userAvatarPath', path);
+            setSuccessMsg('Avatar kartun berhasil diterapkan!');
+        }
     };
 
     const handleSave = async (e) => {
@@ -204,7 +223,7 @@ const ProfileSettings = ({ onLogout }) => {
                             className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
                             title="Ganti Avatar"
                         >
-                            <Film size={26} className="mb-1 text-white" />
+                            <Palette size={24} className="mb-1 text-white" />
                             <span className="text-[11px] font-bold">Ganti Avatar</span>
                         </button>
                     </div>
@@ -216,7 +235,7 @@ const ProfileSettings = ({ onLogout }) => {
                                 Foto Kustom (Belum Disimpan)
                             </span>
                         ) : avatarUrl?.startsWith('/avatars/') ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300">
+                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
                                 <Sparkles size={11} /> Avatar Kartun Bawaan
                             </span>
                         ) : (
@@ -228,14 +247,14 @@ const ProfileSettings = ({ onLogout }) => {
 
                     {/* Action Buttons */}
                     <div className="w-full space-y-2.5">
-                        {/* Tombol 1: Buka Galeri Avatar Bawaan (Netflix) */}
+                        {/* Tombol 1: Buka Galeri Avatar Kartun Bawaan */}
                         <button
                             type="button"
                             onClick={() => setIsModalOpen(true)}
-                            className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 text-white rounded-lg transition text-sm font-semibold shadow-sm shadow-red-500/20 active:scale-[0.98]"
+                            className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-sm font-semibold shadow-sm shadow-blue-500/20 active:scale-[0.98]"
                         >
-                            <Film size={16} />
-                            Pilih Avatar Kartun (Netflix)
+                            <Palette size={16} />
+                            Pilih Avatar Kartun Bawaan
                         </button>
 
                         {/* Tombol 2: Upload Foto Sendiri */}
@@ -252,7 +271,7 @@ const ProfileSettings = ({ onLogout }) => {
                         <p className="text-[11px] text-gray-400">Pilih dari koleksi kartun bawaan atau upload file JPG/PNG.</p>
                     </div>
 
-                    {/* Quick Pick: Pilihan Cepat Netflix Avatar */}
+                    {/* Quick Pick: Pilihan Cepat Avatar Kartun */}
                     <div className="w-full mt-6 pt-5 border-t border-gray-100 dark:border-gray-700 text-left">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1">
@@ -276,19 +295,19 @@ const ProfileSettings = ({ onLogout }) => {
                                         type="button"
                                         title={item.name}
                                         onClick={() => handleSelectPresetAvatar(item.path)}
-                                        className={`group relative aspect-square rounded-lg overflow-hidden border-2 transition-all hover:scale-110 ${
+                                        className={`group relative aspect-square rounded-lg overflow-hidden border-2 transition-all hover:scale-110 cursor-pointer ${
                                             isSelected
-                                                ? 'border-red-500 ring-2 ring-red-500/40 scale-105 shadow-md'
+                                                ? 'border-blue-600 ring-2 ring-blue-500/40 scale-105 shadow-md'
                                                 : 'border-gray-200 dark:border-gray-700 hover:border-gray-400'
                                         }`}
                                     >
                                         <img 
                                             src={item.path} 
                                             alt={item.name} 
-                                            className="w-full h-full object-cover"
+                                            className="w-full h-full object-contain p-1"
                                         />
                                         {isSelected && (
-                                            <div className="absolute inset-0 bg-red-600/30 flex items-center justify-center">
+                                            <div className="absolute inset-0 bg-blue-600/30 flex items-center justify-center">
                                                 <CheckCircle size={14} className="text-white drop-shadow" />
                                             </div>
                                         )}
@@ -356,8 +375,8 @@ const ProfileSettings = ({ onLogout }) => {
                 </div>
             </div>
 
-            {/* Modal Pemilihan Avatar Bawaan (Gaya Netflix) */}
-            <NetflixAvatarPickerModal
+            {/* Modal Pemilihan Avatar Kartun Bawaan */}
+            <AvatarPickerModal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 currentAvatar={avatarUrl}
