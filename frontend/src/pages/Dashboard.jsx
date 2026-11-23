@@ -15,11 +15,12 @@ import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { useLearning } from "../context/LearningContext";
 import AvatarDropdown from "../components/AvatarDropdown";
-import ProgressChart from "../components/ProgressChart";
 import AIInsightCard from "../components/AIInsightCard";
+import { localizeInsightText } from "../utils/localizeInsight";
+import { mockJourneys } from "../mockData";
 
 const Dashboard = ({ onLogout }) => {
-  const { t } = useApp();
+  const { t, language } = useApp();
   const { user } = useAuth();
   const {
     telemetry,
@@ -41,9 +42,12 @@ const Dashboard = ({ onLogout }) => {
   const metrics = telemetry?.user_metrics || {};
   const behaviorAnalysis = telemetry?.behavior_analysis || {};
 
-  // Transform insight for AIInsightCard
+  // Transform insight for AIInsightCard with bilingual localization
+  const rawInsightText = insight?.insight_text || t("loading_insight");
+  const localizedInsight = localizeInsightText(rawInsightText, language);
+
   const insightData = {
-    text: insight?.insight_text || "Memuat insight AI...",
+    text: localizedInsight,
     color: getLearningStyleColor(insight?.learning_style || learningStyle),
   };
 
@@ -55,11 +59,31 @@ const Dashboard = ({ onLogout }) => {
     daysActive: metrics.days_active || 0,
   };
 
+  // Helper for recommendation names localized
+  const getRecName = (rec) => {
+    if (language === 'en') {
+      const match = mockJourneys.find(j => j.id === rec.journey_id || j.name === rec.name);
+      if (match?.name_en) return match.name_en;
+    }
+    return rec.name;
+  };
+
+  const getBehaviorLabel = (val) => {
+    if (!val) return "";
+    const key = `level_${val}`;
+    const translated = t(key);
+    return translated !== key ? translated : val.replace("_", " ");
+  };
+
+  const targetTitle = language === 'en'
+    ? (targetProgress?.config?.title_en || targetProgress?.config?.title || "Focused")
+    : (targetProgress?.config?.title || "Fokus");
+
   if (isLoading)
     return (
       <div className="p-10 flex flex-col items-center justify-center space-y-4 h-96">
         <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-gray-500">Menyiapkan data belajar personalmu...</p>
+        <p className="text-gray-500">{t("loading_personal_data")}</p>
       </div>
     );
 
@@ -92,14 +116,14 @@ const Dashboard = ({ onLogout }) => {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                Gaya Belajarmu
+                {t("learning_style")}
               </p>
               <p className="text-lg font-bold text-emerald-700 dark:text-emerald-300 truncate">
-                {getLearningStyleLabel(learningStyle)}
+                {getLearningStyleLabel(learningStyle, language)}
               </p>
             </div>
             <div className="text-right shrink-0">
-              <p className="text-xs text-gray-500">Confidence</p>
+              <p className="text-xs text-gray-500">{t("confidence_score")}</p>
               <p className="text-xl font-black text-gray-900 dark:text-white">
                 {Math.round((telemetry.confidence || 0) * 100)}%
               </p>
@@ -116,14 +140,14 @@ const Dashboard = ({ onLogout }) => {
               </div>
               <div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                  Target Belajar Harian
+                  {t("daily_target")}
                 </p>
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-blue-900 dark:text-blue-200 capitalize">
-                    Mode {targetProgress?.config?.title || "Fokus"}
+                    {t("mode_label")} {targetTitle}
                   </span>
                   <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
-                    {targetProgress?.quota || 3} Modul/Hari
+                    {t("modules_per_day", { count: targetProgress?.quota || 3 })}
                   </span>
                 </div>
               </div>
@@ -133,17 +157,17 @@ const Dashboard = ({ onLogout }) => {
               to="/target"
               className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-0.5 transition bg-white/70 dark:bg-gray-800/80 px-2.5 py-1.5 rounded-lg border border-blue-100 dark:border-gray-700"
             >
-              Ubah <ChevronRight size={13} />
+              {t("change")} <ChevronRight size={13} />
             </Link>
           </div>
 
           <div>
             <div className="flex justify-between items-center text-xs mb-1.5">
               <span className="text-gray-600 dark:text-gray-300 font-medium flex items-center gap-1.5">
-                Progres: <strong>{targetProgress?.completedToday || 0} / {targetProgress?.quota || 3}</strong> modul
+                {t("progress")}: <strong>{targetProgress?.completedToday || 0} / {targetProgress?.quota || 3}</strong> {t("modules_unit")}
                 {targetProgress?.isAchieved && (
                   <span className="text-[10px] bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300 px-1.5 py-0.2 rounded font-bold">
-                    Tercapai
+                    {t("achieved")}
                   </span>
                 )}
               </span>
@@ -170,14 +194,14 @@ const Dashboard = ({ onLogout }) => {
           </div>
           <div className="min-w-0">
             <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">
-              Target Hari Ini
+              {t("today_target")}
             </p>
             <p className="text-xl font-bold text-gray-900 dark:text-white">
               {targetProgress?.completedToday || 0} / {targetProgress?.quota || 3}{" "}
-              <span className="text-xs font-normal text-gray-500">modul</span>
+              <span className="text-xs font-normal text-gray-500">{t("modules_unit")}</span>
             </p>
             <p className="text-[11px] font-medium text-indigo-600 dark:text-indigo-400 mt-0.5 truncate">
-              {targetProgress?.isAchieved ? "🎉 Target tercapai!" : `Kurang ${targetProgress?.remaining || 0} lagi`}
+              {targetProgress?.isAchieved ? t("target_achieved_toast") : t("remaining_modules", { count: targetProgress?.remaining || 0 })}
             </p>
           </div>
         </div>
@@ -189,7 +213,7 @@ const Dashboard = ({ onLogout }) => {
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">
-              Total Modul Selesai
+              {t("total_completed_modules")}
             </p>
             <p className="text-xl font-bold text-gray-900 dark:text-white">
               {stats.completedModules}
@@ -204,11 +228,11 @@ const Dashboard = ({ onLogout }) => {
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">
-              Hari Aktif
+              {t("active_days")}
             </p>
             <p className="text-xl font-bold text-gray-900 dark:text-white">
               {stats.daysActive}{" "}
-              <span className="text-sm font-normal text-gray-500">hari</span>
+              <span className="text-sm font-normal text-gray-500">{t("days_unit")}</span>
             </p>
           </div>
         </div>
@@ -220,7 +244,7 @@ const Dashboard = ({ onLogout }) => {
           </div>
           <div>
             <p className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mb-1">
-              Engagement
+              {t("engagement")}
             </p>
             <p className="text-xl font-bold text-gray-900 dark:text-white">
               {stats.engagementScore}
@@ -240,26 +264,26 @@ const Dashboard = ({ onLogout }) => {
             <div className="grid grid-cols-3 gap-4">
               <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
                 <p className="text-xs text-gray-500 uppercase mb-1">
-                  Konsistensi
+                  {t("consistency")}
                 </p>
                 <p className="font-bold text-gray-900 dark:text-white capitalize">
-                  {behaviorAnalysis.consistency?.replace("_", " ")}
+                  {getBehaviorLabel(behaviorAnalysis.consistency)}
                 </p>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
                 <p className="text-xs text-gray-500 uppercase mb-1">
-                  Kecepatan
+                  {t("velocity")}
                 </p>
                 <p className="font-bold text-gray-900 dark:text-white capitalize">
-                  {behaviorAnalysis.velocity?.replace("_", " ")}
+                  {getBehaviorLabel(behaviorAnalysis.velocity)}
                 </p>
               </div>
               <div className="bg-white dark:bg-gray-800 p-4 rounded-xl border border-gray-200 dark:border-gray-700 text-center">
                 <p className="text-xs text-gray-500 uppercase mb-1">
-                  Engagement
+                  {t("engagement_level")}
                 </p>
                 <p className="font-bold text-gray-900 dark:text-white capitalize">
-                  {behaviorAnalysis.engagement_level?.replace("_", " ")}
+                  {getBehaviorLabel(behaviorAnalysis.engagement_level)}
                 </p>
               </div>
             </div>
@@ -271,7 +295,7 @@ const Dashboard = ({ onLogout }) => {
           <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg">
             <h3 className="font-bold text-lg mb-3 flex items-center gap-2">
               <Sparkles size={20} />
-              Rekomendasi Course
+              {t("course_recommendations")}
             </h3>
             {recommendations.length > 0 ? (
               <ul className="space-y-3">
@@ -281,7 +305,7 @@ const Dashboard = ({ onLogout }) => {
                       {idx + 1}
                     </span>
                     <div>
-                      <p className="font-medium text-sm">{rec.name}</p>
+                      <p className="font-medium text-sm">{getRecName(rec)}</p>
                       <p className="text-blue-200 text-xs">
                         Score: {Math.round(rec.score * 100)}%
                       </p>
@@ -291,8 +315,7 @@ const Dashboard = ({ onLogout }) => {
               </ul>
             ) : (
               <p className="text-blue-100 text-sm opacity-90">
-                Tidak ada rekomendasi saat ini. Terus belajar untuk mendapatkan
-                rekomendasi personal!
+                {t("no_recommendations")}
               </p>
             )}
           </div>

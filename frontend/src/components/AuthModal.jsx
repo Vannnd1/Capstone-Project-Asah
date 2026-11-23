@@ -15,6 +15,7 @@ const REGISTER_AVATARS = [
 // --- Sub-Komponen: Register Form ---
 const RegisterForm = ({ onRegisterSuccess }) => {
   const { register } = useAuth();
+  const { t } = useApp();
 
   const [formData, setFormData] = useState({
     username: "",
@@ -62,7 +63,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
       )}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Username
+          {t('auth_username_label')}
         </label>
         <input
           type="text"
@@ -76,7 +77,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Nama Lengkap
+          {t('auth_display_name_label')}
         </label>
         <input
           type="text"
@@ -90,7 +91,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Email
+          {t('auth_email_label')}
         </label>
         <input
           type="email"
@@ -106,7 +107,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
       {/* Input Password dengan Mata */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Password
+          {t('auth_password_label')}
         </label>
         <div className="relative">
           <input
@@ -131,8 +132,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
       {/* Pilihan Avatar Kartun Bawaan */}
       <div>
         <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5 flex items-center justify-between">
-          <span>Pilih Avatar Kartun:</span>
-          <span className="text-[11px] text-blue-600 dark:text-blue-400">Bisa diubah nanti</span>
+          <span>{t('auth_choose_starter_avatar')}</span>
         </label>
         <div className="grid grid-cols-6 gap-2">
           {REGISTER_AVATARS.map((av) => {
@@ -145,13 +145,13 @@ const RegisterForm = ({ onRegisterSuccess }) => {
                 title={av.name}
                 className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all hover:scale-105 cursor-pointer ${
                   isSel
-                    ? "border-red-500 ring-2 ring-red-500/40 scale-105 shadow-md"
+                    ? "border-blue-600 ring-2 ring-blue-500/40 scale-105 shadow-md"
                     : "border-gray-200 dark:border-gray-700 hover:border-gray-400"
                 }`}
               >
                 <img src={av.path} alt={av.name} className="w-full h-full object-cover" />
                 {isSel && (
-                  <div className="absolute inset-0 bg-red-600/30 flex items-center justify-center">
+                  <div className="absolute inset-0 bg-blue-600/30 flex items-center justify-center">
                     <Check size={14} className="text-white drop-shadow" />
                   </div>
                 )}
@@ -166,7 +166,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
         className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
         disabled={loading}
       >
-        {loading ? "Memproses..." : "Buat Akun"}
+        {loading ? t('auth_loading') : t('auth_submit_register')}
       </button>
     </form>
   );
@@ -175,6 +175,7 @@ const RegisterForm = ({ onRegisterSuccess }) => {
 // --- Sub-Komponen: Login Form ---
 const LoginFormComponent = ({ onLogin }) => {
   const { login } = useAuth();
+  const { t, language } = useApp();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -191,7 +192,7 @@ const LoginFormComponent = ({ onLogin }) => {
       await login(username.trim(), password.trim());
       onLogin(true);
     } catch (err) {
-      setError(err.message || "Login gagal. Silakan periksa kembali.");
+      setError(err.message || "Login failed.");
     } finally {
       setLoading(false);
     }
@@ -214,7 +215,7 @@ const LoginFormComponent = ({ onLogin }) => {
       {/* Info & Tombol Demo Account */}
       <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-center justify-between text-xs text-blue-700 dark:text-blue-300">
         <div>
-          <span className="font-semibold block">Akun Demo:</span>
+          <span className="font-semibold block">{language === 'en' ? 'Demo Account:' : 'Akun Demo:'}</span>
           <span>User: <code className="bg-blue-100 dark:bg-blue-800/60 px-1 py-0.5 rounded font-mono">siswa_demo</code> | Pass: <code className="bg-blue-100 dark:bg-blue-800/60 px-1 py-0.5 rounded font-mono">password123</code></span>
         </div>
         <button
@@ -222,12 +223,12 @@ const LoginFormComponent = ({ onLogin }) => {
           onClick={handleFillDemo}
           className="ml-2 px-2.5 py-1.5 bg-blue-600 text-white font-medium rounded hover:bg-blue-700 transition shrink-0"
         >
-          Isi Cepat
+          {language === 'en' ? 'Auto Fill' : 'Isi Cepat'}
         </button>
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Username
+          {t('auth_username_label')}
         </label>
         <input
           type="text"
@@ -242,7 +243,7 @@ const LoginFormComponent = ({ onLogin }) => {
       {/* Input Password dengan Mata */}
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          Password
+          {t('auth_password_label')}
         </label>
         <div className="relative">
           <input
@@ -268,7 +269,7 @@ const LoginFormComponent = ({ onLogin }) => {
         className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition disabled:bg-gray-400"
         disabled={loading}
       >
-        {loading ? "Memproses..." : "Login"}
+        {loading ? t('auth_loading') : t('auth_submit_login')}
       </button>
     </form>
   );
@@ -279,7 +280,7 @@ const AuthModal = ({ onLogin, onClose, initialMode = "login" }) => {
   const [isRegisterMode, setIsRegisterMode] = useState(
     initialMode === "register"
   );
-  const { darkMode } = useApp();
+  const { darkMode, t } = useApp();
 
   const handleAuthSuccess = (isLoggedIn = false) => {
     if (isLoggedIn) {
@@ -293,7 +294,6 @@ const AuthModal = ({ onLogin, onClose, initialMode = "login" }) => {
       className="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-[100] p-4"
       onClick={onClose}
     >
-      {/* Backdrop Blur effect added via class if desired, or handled by CSS */}
       <div
         className="relative bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl w-full max-w-md transform transition-all"
         onClick={(e) => e.stopPropagation()}
@@ -307,7 +307,7 @@ const AuthModal = ({ onLogin, onClose, initialMode = "login" }) => {
         </button>
 
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 text-center">
-          {isRegisterMode ? "Buat Akun Baru" : "Masuk ke AI Learning Insight"}
+          {isRegisterMode ? t('auth_register_tab') : t('auth_login_tab')}
         </h2>
 
         {isRegisterMode ? (
@@ -321,15 +321,13 @@ const AuthModal = ({ onLogin, onClose, initialMode = "login" }) => {
             onClick={() => setIsRegisterMode(!isRegisterMode)}
             className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
           >
-            {isRegisterMode
-              ? "Sudah punya akun? Masuk di sini."
-              : "Belum punya akun? Buat akun sekarang."}
+            {isRegisterMode ? t('auth_have_account') : t('auth_no_account')}
           </button>
           <button
             onClick={onClose}
             className="mt-4 w-full text-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700"
           >
-            Kembali ke Beranda
+            {t('back')}
           </button>
         </div>
       </div>

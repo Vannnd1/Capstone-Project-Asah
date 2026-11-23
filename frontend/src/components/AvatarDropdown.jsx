@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { LogOut, Settings, User, ChevronDown } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useApp } from '../context/AppContext';
 
 const AvatarDropdown = ({ userImagePath, userName, onLogout }) => {
+    const { t } = useApp();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef(null);
     
@@ -69,14 +71,14 @@ const AvatarDropdown = ({ userImagePath, userName, onLogout }) => {
                 <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                     <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700 mb-2">
                         <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{userName}</p>
-                        <p className="text-xs text-gray-500">Mode Siswa</p>
+                        <p className="text-xs text-gray-500">{t('student_mode')}</p>
                     </div>
 
                     <Link to="/settings/profile" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                        <User size={16} /> Profil Saya
+                        <User size={16} /> {t('profile')}
                     </Link>
                     <Link to="/settings" className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                        <Settings size={16} /> Pengaturan
+                        <Settings size={16} /> {t('settings')}
                     </Link>
                     
                     <div className="h-px bg-gray-100 dark:bg-gray-700 my-2"></div>
@@ -85,7 +87,7 @@ const AvatarDropdown = ({ userImagePath, userName, onLogout }) => {
                         onClick={onLogout}
                         className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-left"
                     >
-                        <LogOut size={16} /> Keluar
+                        <LogOut size={16} /> {t('logout')}
                     </button>
                 </div>
             )}

@@ -7,36 +7,40 @@ import {
     CheckCircle, 
     CheckCircle2,
     ArrowLeft, 
-    ArrowRight,
-    Lock, 
+    ArrowRight, 
     Award, 
     Clock, 
     BookOpen, 
-    Sparkles,
-    RotateCcw
+    Sparkles 
 } from 'lucide-react';
-import { mockJourneys, mockTutorials } from '../mockData';
+import { mockJourneys, mockTutorials, getLocalizedJourney, getLocalizedTutorial } from '../mockData';
 import { 
     isModuleCompleted, 
     toggleModuleCompleted, 
     getJourneyProgress 
 } from '../services/courseProgressService';
+import { useApp } from '../context/AppContext';
 
 const CourseDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { t, language } = useApp();
     const courseId = parseInt(id);
 
-    // Cari data kelas & modul materi
-    const course = mockJourneys.find(c => c.id === courseId);
-    const modules = mockTutorials.filter(m => m.journey_id === courseId);
+    // Cari data kelas & modul materi (Bilingual)
+    const rawCourse = mockJourneys.find(c => c.id === courseId);
+    const course = rawCourse ? getLocalizedJourney(rawCourse, language) : null;
+    const rawModules = mockTutorials.filter(m => m.journey_id === courseId);
+    const modules = rawModules.map(m => getLocalizedTutorial(m, language));
     
-    const [activeModule, setActiveModule] = useState(modules[0] || null);
+    const [activeModuleId, setActiveModuleId] = useState(modules[0]?.id || null);
     const [completedSet, setCompletedSet] = useState(new Set());
     const [progressStats, setProgressStats] = useState({ completedCount: 0, totalCount: modules.length, percentage: 0, isCompleted: false });
     const [toastMsg, setToastMsg] = useState('');
     const [selectedQuizOption, setSelectedQuizOption] = useState(null);
     const [quizAnswered, setQuizAnswered] = useState(false);
+
+    const activeModule = modules.find(m => m.id === activeModuleId) || modules[0] || null;
 
     // Muat progres modul untuk kelas ini
     const refreshProgress = () => {
@@ -52,8 +56,8 @@ const CourseDetail = () => {
 
     useEffect(() => {
         refreshProgress();
-        if (modules.length > 0 && !activeModule) {
-            setActiveModule(modules[0]);
+        if (modules.length > 0 && !activeModuleId) {
+            setActiveModuleId(modules[0].id);
         }
     }, [courseId]);
 
@@ -61,19 +65,19 @@ const CourseDetail = () => {
     useEffect(() => {
         setSelectedQuizOption(null);
         setQuizAnswered(false);
-    }, [activeModule?.id]);
+    }, [activeModuleId]);
 
     if (!course) {
         return (
             <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col items-center justify-center p-6 text-center">
                 <BookOpen size={48} className="text-gray-400 mb-4" />
-                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Kelas Tidak Ditemukan</h2>
-                <p className="text-sm text-gray-500 mb-6">Kelas dengan ID #{id} tidak terdaftar di sistem.</p>
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">{t('course_not_found')}</h2>
+                <p className="text-sm text-gray-500 mb-6">{t('course_not_found_desc', { id })}</p>
                 <button
                     onClick={() => navigate('/courses')}
                     className="px-5 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition"
                 >
-                    Kembali ke Kelas Saya
+                    {t('back_to_my_courses')}
                 </button>
             </div>
         );
@@ -92,13 +96,12 @@ const CourseDetail = () => {
         refreshProgress();
 
         if (willBeDone) {
-            setToastMsg(`Hebat! Modul "${activeModule.title}" berhasil diselesaikan.`);
-            // Jika ada modul berikutnya dan belum selesai, tawarkan atau pindah
+            setToastMsg(t('module_toast_completed', { title: activeModule.title }));
             setTimeout(() => {
                 setToastMsg('');
             }, 3500);
         } else {
-            setToastMsg(`Status modul diubah menjadi belum selesai.`);
+            setToastMsg(t('module_toast_incomplete'));
             setTimeout(() => {
                 setToastMsg('');
             }, 2500);
@@ -107,7 +110,7 @@ const CourseDetail = () => {
 
     const handleNextModule = () => {
         if (nextModule) {
-            setActiveModule(nextModule);
+            setActiveModuleId(nextModule.id);
         }
     };
 
@@ -119,18 +122,18 @@ const CourseDetail = () => {
                     <button 
                         onClick={() => navigate('/courses')} 
                         className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition"
-                        title="Kembali ke Kelas Saya"
+                        title={t('back_to_my_courses')}
                     >
                         <ArrowLeft size={20} />
                     </button>
                     <div>
                         <div className="flex items-center gap-2">
                             <span className="text-xs font-semibold px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
-                                {course.category || 'Alur Belajar'}
+                                {course.category || t('learning_track')}
                             </span>
                             <span className="text-xs text-gray-400">•</span>
                             <span className="text-xs text-gray-500 dark:text-gray-400">
-                                Modul {currentModuleIndex + 1} dari {modules.length}
+                                {t('module_index_of_total', { index: currentModuleIndex + 1, total: modules.length })}
                             </span>
                         </div>
                         <h1 className="font-bold text-gray-900 dark:text-white text-base md:text-lg truncate max-w-md md:max-w-xl">
@@ -143,7 +146,7 @@ const CourseDetail = () => {
                 <div className="flex items-center gap-4">
                     <div className="hidden sm:flex flex-col items-end">
                         <div className="text-xs font-bold text-gray-700 dark:text-gray-300">
-                            {progressStats.completedCount}/{progressStats.totalCount} Modul Selesai
+                            {t('modules_done_header', { done: progressStats.completedCount, total: progressStats.totalCount })}
                         </div>
                         <div className="w-32 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-1">
                             <div 
@@ -185,7 +188,7 @@ const CourseDetail = () => {
                                             </div>
                                             <p className="mt-4 font-bold text-lg text-white">{activeModule.title}</p>
                                             <p className="text-xs text-gray-300 mt-1 flex items-center gap-1.5">
-                                                <Clock size={13} /> Durasi Pemutaran: {activeModule.duration}
+                                                <Clock size={13} /> {t('playback_duration', { duration: activeModule.duration })}
                                             </p>
                                         </div>
 
@@ -207,10 +210,10 @@ const CourseDetail = () => {
                                             </div>
                                             <div>
                                                 <span className="text-xs font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wide">
-                                                    Kuis Interaktif Modul
+                                                    {t('interactive_quiz_title')}
                                                 </span>
                                                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                                                    Uji Pemahaman Materi: {activeModule.title}
+                                                    {t('quiz_assessment_title', { title: activeModule.title })}
                                                 </h3>
                                             </div>
                                         </div>
@@ -218,14 +221,14 @@ const CourseDetail = () => {
                                         {/* Soal Kuis Simulasi */}
                                         <div className="bg-white dark:bg-gray-700/60 p-5 rounded-xl border border-gray-200 dark:border-gray-600 mt-4 space-y-3">
                                             <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                                                Soal: Apa tujuan utama dari prinsip arsitektur yang dibahas pada modul ini?
+                                                {t('quiz_question_label')}
                                             </p>
                                             <div className="space-y-2 pt-2">
                                                 {[
-                                                    'A. Meningkatkan efisiensi pemrosesan dan modularitas sistem',
-                                                    'B. Mengurangi jumlah file tanpa mempertimbangkan skalabilitas',
-                                                    'C. Memaksa seluruh fungsi berjalan sinkron dalam satu thread',
-                                                    'D. Menghilangkan kebutuhan autentikasi pada endpoint publik'
+                                                    t('quiz_opt_a'),
+                                                    t('quiz_opt_b'),
+                                                    t('quiz_opt_c'),
+                                                    t('quiz_opt_d')
                                                 ].map((opt, idx) => (
                                                     <button
                                                         key={idx}
@@ -253,8 +256,8 @@ const CourseDetail = () => {
                                                         : 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200'
                                                 }`}>
                                                     {selectedQuizOption === 0
-                                                        ? '✓ Benar sekali! Pemahaman konsep modul ini sudah sangat baik.'
-                                                        : '✕ Jawaban kurang tepat. Jawaban yang benar adalah A.'}
+                                                        ? t('quiz_feedback_correct')
+                                                        : t('quiz_feedback_incorrect')}
                                                 </div>
                                             )}
                                         </div>
@@ -268,7 +271,7 @@ const CourseDetail = () => {
                                             </div>
                                             <div>
                                                 <span className="text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-wide">
-                                                    Modul Bacaan & Panduan Praktik
+                                                    {t('reading_module_title')}
                                                 </span>
                                                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                                                     {activeModule.title}
@@ -285,18 +288,18 @@ const CourseDetail = () => {
                                             {activeModule.description}
                                         </span>
                                         <span className="flex items-center gap-1 bg-gray-100 dark:bg-gray-700 px-2.5 py-1 rounded-md">
-                                            <Clock size={13} /> Estimasi: {activeModule.duration}
+                                            <Clock size={13} /> {t('estimated_time', { duration: activeModule.duration })}
                                         </span>
                                     </div>
 
                                     <div className="prose dark:prose-invert max-w-none text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
                                         <p>{activeModule.content}</p>
                                         <div className="bg-gray-50 dark:bg-gray-900/60 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mt-4">
-                                            <h4 className="font-bold text-xs uppercase tracking-wider text-gray-500 mb-2">Poin Inti Pembelajaran:</h4>
+                                            <h4 className="font-bold text-xs uppercase tracking-wider text-gray-500 mb-2">{t('core_learning_points')}</h4>
                                             <ul className="list-disc list-inside space-y-1 text-xs text-gray-600 dark:text-gray-400">
-                                                <li>Pahami konsep teoretis dan arsitektur di balik studi kasus modul ini.</li>
-                                                <li>Lakukan eksperimen kode mandiri untuk menguji perilaku sistem saat beban bertambah.</li>
-                                                <li>Tandai selesai untuk memperbarui telemetri belajar dan target harian akunmu.</li>
+                                                <li>{t('point_1')}</li>
+                                                <li>{t('point_2')}</li>
+                                                <li>{t('point_3')}</li>
                                             </ul>
                                         </div>
                                     </div>
@@ -314,12 +317,12 @@ const CourseDetail = () => {
                                             {currentModuleDone ? (
                                                 <>
                                                     <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400" />
-                                                    <span>Modul Selesai ✓ (Klik untuk Batal)</span>
+                                                    <span>{t('btn_module_completed')}</span>
                                                 </>
                                             ) : (
                                                 <>
                                                     <CheckCircle size={18} />
-                                                    <span>Tandai Selesai</span>
+                                                    <span>{t('btn_mark_complete')}</span>
                                                 </>
                                             )}
                                         </button>
@@ -329,7 +332,7 @@ const CourseDetail = () => {
                                                 onClick={handleNextModule}
                                                 className="w-full sm:w-auto px-5 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition"
                                             >
-                                                <span>Modul Berikutnya</span>
+                                                <span>{t('btn_next_module')}</span>
                                                 <ArrowRight size={16} />
                                             </button>
                                         )}
@@ -345,9 +348,9 @@ const CourseDetail = () => {
                                             <Award size={36} />
                                         </div>
                                         <div>
-                                            <h3 className="font-extrabold text-lg">Selamat! Kamu Telah Menuntaskan Kelas Ini!</h3>
+                                            <h3 className="font-extrabold text-lg">{t('course_congrats_title')}</h3>
                                             <p className="text-xs text-emerald-100 mt-1">
-                                                Seluruh modul materi telah selesai. Keahlianmu terdaftar dan berkontribusi pada skor telemetri AI.
+                                                {t('course_congrats_desc')}
                                             </p>
                                         </div>
                                     </div>
@@ -355,23 +358,23 @@ const CourseDetail = () => {
                                         onClick={() => navigate('/courses')}
                                         className="px-5 py-2.5 bg-white text-emerald-700 font-bold rounded-xl text-sm hover:bg-emerald-50 transition shrink-0 shadow-sm"
                                     >
-                                        Lihat Kelas Lainnya
+                                        {t('btn_explore_more')}
                                     </button>
                                 </div>
                             )}
 
                         </div>
                     ) : (
-                        <p className="text-gray-500">Pilih materi dari daftar modul di samping.</p>
+                        <p className="text-gray-500">{t('loading')}</p>
                     )}
                 </main>
 
                 {/* SIDEBAR DAFTAR MODUL */}
                 <aside className="w-80 md:w-96 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 overflow-y-auto z-10 flex flex-col">
                     <div className="p-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/80">
-                        <h3 className="font-bold text-gray-900 dark:text-white text-sm">Daftar Modul Pembelajaran</h3>
+                        <h3 className="font-bold text-gray-900 dark:text-white text-sm">{t('curriculum_sidebar_title')}</h3>
                         <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            <span>{progressStats.completedCount} dari {modules.length} modul selesai</span>
+                            <span>{t('sidebar_modules_done', { done: progressStats.completedCount, total: modules.length })}</span>
                             <span className="font-bold text-blue-600">{progressStats.percentage}%</span>
                         </div>
                         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-2">
@@ -387,10 +390,16 @@ const CourseDetail = () => {
                             const isDone = completedSet.has(modul.id);
                             const isActive = activeModule?.id === modul.id;
 
+                            const typeLabel = modul.type === 'video' 
+                                ? t('type_video') 
+                                : modul.type === 'text' 
+                                    ? t('type_text') 
+                                    : t('type_quiz');
+
                             return (
                                 <button 
                                     key={modul.id} 
-                                    onClick={() => setActiveModule(modul)}
+                                    onClick={() => setActiveModuleId(modul.id)}
                                     className={`w-full p-4 text-left flex gap-3.5 items-start hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
                                         isActive 
                                             ? 'bg-blue-50/70 dark:bg-blue-900/30 border-l-4 border-blue-600' 
@@ -424,7 +433,7 @@ const CourseDetail = () => {
                                                 {modul.type === 'video' && <PlayCircle size={11} />}
                                                 {modul.type === 'text' && <FileText size={11} />}
                                                 {modul.type === 'quiz' && <HelpCircle size={11} />}
-                                                {modul.type}
+                                                {typeLabel}
                                             </span>
                                             <span>•</span>
                                             <span>{modul.duration}</span>

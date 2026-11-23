@@ -19,10 +19,11 @@ import {
     getAllJourneysWithProgress, 
     getStudentProgressSummary 
 } from '../services/courseProgressService';
+import { getLocalizedJourney } from '../mockData';
 
 const MyCourses = ({ onLogout }) => { 
     const navigate = useNavigate();
-    const { t } = useApp();
+    const { t, language } = useApp();
 
     const [journeys, setJourneys] = useState([]);
     const [stats, setStats] = useState({
@@ -59,7 +60,7 @@ const MyCourses = ({ onLogout }) => {
     }, []);
 
     // Filter daftar kelas
-    const filteredJourneys = journeys.filter(journey => {
+    const filteredJourneys = journeys.map(j => getLocalizedJourney(j, language)).filter(journey => {
         const matchesSearch = 
             journey.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             journey.summary.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -82,16 +83,25 @@ const MyCourses = ({ onLogout }) => {
     const categories = ['all', 'Frontend', 'Backend', 'AI & Data', 'Cloud & DevOps', 'Design'];
 
     const getDifficultyBadge = (difficulty) => {
-        switch (difficulty?.toLowerCase()) {
-            case 'beginner':
-                return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700';
-            case 'intermediate':
-                return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border-amber-300 dark:border-amber-700';
-            case 'advanced':
-                return 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-300 dark:border-purple-700';
-            default:
-                return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600';
+        const d = (difficulty || '').toLowerCase();
+        if (d === 'beginner' || d === 'pemula') {
+            return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700';
         }
+        if (d === 'intermediate' || d === 'menengah') {
+            return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 border-amber-300 dark:border-amber-700';
+        }
+        if (d === 'advanced' || d === 'mahir') {
+            return 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-300 dark:border-purple-700';
+        }
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600';
+    };
+
+    const getDifficultyLabel = (difficulty) => {
+        const d = (difficulty || '').toLowerCase();
+        if (d === 'beginner' || d === 'pemula') return t('difficulty_beginner');
+        if (d === 'intermediate' || d === 'menengah') return t('difficulty_intermediate');
+        if (d === 'advanced' || d === 'mahir') return t('difficulty_advanced');
+        return difficulty;
     };
 
     return (
@@ -103,7 +113,7 @@ const MyCourses = ({ onLogout }) => {
                         <BookOpen className="text-blue-600" /> {t('myClass')}
                     </h1>
                     <p className="text-gray-500 dark:text-gray-400">
-                        Pantau kemajuan belajar nyata, selesaikan modul, dan raih sertifikat kompetensi.
+                        {t('my_courses_subtitle')}
                     </p>
                 </div>
             </HeaderAvatar>
@@ -115,8 +125,8 @@ const MyCourses = ({ onLogout }) => {
                         <Layers size={22} />
                     </div>
                     <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Total Kelas</p>
-                        <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.totalCourses} Kelas</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t('total_courses')}</p>
+                        <p className="text-xl font-bold text-gray-900 dark:text-white">{t('courses_count', { count: stats.totalCourses })}</p>
                     </div>
                 </div>
 
@@ -125,8 +135,8 @@ const MyCourses = ({ onLogout }) => {
                         <Flame size={22} />
                     </div>
                     <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Sedang Berjalan</p>
-                        <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.inProgressCourses} Kelas</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t('in_progress')}</p>
+                        <p className="text-xl font-bold text-gray-900 dark:text-white">{t('courses_count', { count: stats.inProgressCourses })}</p>
                     </div>
                 </div>
 
@@ -135,8 +145,8 @@ const MyCourses = ({ onLogout }) => {
                         <CheckCircle2 size={22} />
                     </div>
                     <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Kelas Tuntas</p>
-                        <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.completedCourses} Kelas</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t('courses_completed')}</p>
+                        <p className="text-xl font-bold text-gray-900 dark:text-white">{t('courses_count', { count: stats.completedCourses })}</p>
                     </div>
                 </div>
 
@@ -145,7 +155,7 @@ const MyCourses = ({ onLogout }) => {
                         <TrendingUp size={22} />
                     </div>
                     <div>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Rata-rata Progres</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{t('average_progress')}</p>
                         <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.averageProgress}%</p>
                     </div>
                 </div>
@@ -160,7 +170,7 @@ const MyCourses = ({ onLogout }) => {
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Cari kelas atau topik..."
+                            placeholder={t('search_courses_placeholder')}
                             className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                         />
                         <Search className="absolute left-3 top-2.5 text-gray-400" size={16} />
@@ -176,7 +186,7 @@ const MyCourses = ({ onLogout }) => {
                                     : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
                             }`}
                         >
-                            Semua ({stats.totalCourses})
+                            {t('all')} ({stats.totalCourses})
                         </button>
                         <button
                             onClick={() => setSelectedStatus('active')}
@@ -186,7 +196,7 @@ const MyCourses = ({ onLogout }) => {
                                     : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
                             }`}
                         >
-                            Sedang Belajar ({stats.inProgressCourses})
+                            {t('learning_in_progress')} ({stats.inProgressCourses})
                         </button>
                         <button
                             onClick={() => setSelectedStatus('completed')}
@@ -196,7 +206,7 @@ const MyCourses = ({ onLogout }) => {
                                     : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
                             }`}
                         >
-                            Selesai ({stats.completedCourses})
+                            {t('completed')} ({stats.completedCourses})
                         </button>
                         <button
                             onClick={() => setSelectedStatus('not_started')}
@@ -206,7 +216,7 @@ const MyCourses = ({ onLogout }) => {
                                     : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
                             }`}
                         >
-                            Belum Mulai ({stats.notStartedCourses})
+                            {t('not_started')} ({stats.notStartedCourses})
                         </button>
                     </div>
                 </div>
@@ -214,7 +224,7 @@ const MyCourses = ({ onLogout }) => {
                 {/* Category Chips */}
                 <div className="flex items-center gap-2 overflow-x-auto pt-1 text-xs">
                     <span className="text-gray-400 font-medium flex items-center gap-1 shrink-0">
-                        <Filter size={14} /> Kategori:
+                        <Filter size={14} /> {t('category_label')}
                     </span>
                     {categories.map((cat) => (
                         <button
@@ -226,7 +236,7 @@ const MyCourses = ({ onLogout }) => {
                                     : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
                             }`}
                         >
-                            {cat === 'all' ? 'Semua Topik' : cat}
+                            {cat === 'all' ? t('all_topics') : cat}
                         </button>
                     ))}
                 </div>
@@ -236,8 +246,8 @@ const MyCourses = ({ onLogout }) => {
             {filteredJourneys.length === 0 ? (
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
                     <BookOpen size={48} className="mx-auto text-gray-400 mb-3" />
-                    <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-1">Tidak ada kelas yang cocok</h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">Coba sesuaikan filter status atau kata kunci pencarianmu.</p>
+                    <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-1">{t('no_matching_courses')}</h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">{t('no_matching_courses_desc')}</p>
                     <button
                         onClick={() => {
                             setSearchQuery('');
@@ -246,7 +256,7 @@ const MyCourses = ({ onLogout }) => {
                         }}
                         className="px-4 py-2 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 transition"
                     >
-                        Reset Filter
+                        {t('reset_filter')}
                     </button>
                 </div>
             ) : (
@@ -275,7 +285,7 @@ const MyCourses = ({ onLogout }) => {
                                             {journey.category || 'Teknologi'}
                                         </span>
                                         <span className={`px-2.5 py-1 backdrop-blur-md rounded-md text-xs font-bold border ${getDifficultyBadge(journey.difficulty)}`}>
-                                            {journey.difficulty}
+                                            {getDifficultyLabel(journey.difficulty)}
                                         </span>
                                     </div>
 
@@ -283,15 +293,15 @@ const MyCourses = ({ onLogout }) => {
                                     <div className="absolute bottom-3 left-3">
                                         {isDone ? (
                                             <span className="px-3 py-1 bg-emerald-600 text-white rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md">
-                                                <Award size={14} /> Tuntas 100%
+                                                <Award size={14} /> {t('status_completed_100')}
                                             </span>
                                         ) : hasStarted ? (
                                             <span className="px-3 py-1 bg-blue-600 text-white rounded-full text-xs font-bold flex items-center gap-1.5 shadow-md">
-                                                <Flame size={14} /> Berlangsung
+                                                <Flame size={14} /> {t('status_ongoing')}
                                             </span>
                                         ) : (
                                             <span className="px-3 py-1 bg-gray-800/80 text-gray-200 rounded-full text-xs font-medium backdrop-blur-sm">
-                                                Belum Dimulai
+                                                {t('status_not_started')}
                                             </span>
                                         )}
                                     </div>
@@ -311,9 +321,9 @@ const MyCourses = ({ onLogout }) => {
                                         <div className="flex justify-between items-center text-xs font-semibold mb-1.5">
                                             <span className="text-gray-600 dark:text-gray-300 flex items-center gap-1">
                                                 {isDone ? (
-                                                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">Semua Modul Tuntas</span>
+                                                    <span className="text-emerald-600 dark:text-emerald-400 font-bold">{t('all_modules_completed')}</span>
                                                 ) : (
-                                                    <span>Progres Belajar</span>
+                                                    <span>{t('learning_progress_label')}</span>
                                                 )}
                                             </span>
                                             <span className={`font-bold ${isDone ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-blue-400'}`}>
@@ -331,8 +341,8 @@ const MyCourses = ({ onLogout }) => {
                                             />
                                         </div>
                                         <div className="flex justify-between items-center text-[11px] text-gray-500 dark:text-gray-400 mt-1.5">
-                                            <span>{journey.completed_modules || 0} dari {journey.total_modules} modul selesai</span>
-                                            {isDone && <span className="text-emerald-600 dark:text-emerald-400 font-semibold">Sertifikat Tersedia</span>}
+                                            <span>{t('modules_completed_count', { done: journey.completed_modules || 0, total: journey.total_modules })}</span>
+                                            {isDone && <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{t('certificate_available')}</span>}
                                         </div>
                                     </div>
 
@@ -340,7 +350,7 @@ const MyCourses = ({ onLogout }) => {
                                     <div className="flex items-center justify-between pt-3 border-t border-gray-100 dark:border-gray-700">
                                         <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
                                             <BookOpen size={14} />
-                                            <span>{journey.total_modules} Modul Materi</span>
+                                            <span>{t('course_modules_count', { count: journey.total_modules })}</span>
                                         </div>
                                         
                                         <button 
@@ -353,7 +363,7 @@ const MyCourses = ({ onLogout }) => {
                                                         : 'bg-gray-900 dark:bg-gray-700 hover:bg-gray-800 dark:hover:bg-gray-600 text-white'
                                             }`}
                                         >
-                                            <span>{isDone ? 'Ulas Materi' : hasStarted ? 'Lanjut Belajar' : 'Mulai Belajar'}</span>
+                                            <span>{isDone ? t('review_course') : hasStarted ? t('continue_learning') : t('start_learning')}</span>
                                             <ArrowRight size={14} />
                                         </button>
                                     </div>

@@ -26,12 +26,12 @@ const Settings = ({ onLogout }) => {
                 image_path: path,
             });
             localStorage.setItem('userAvatarPath', path);
-            setSuccessMsg('Avatar berhasil diubah dan disimpan!');
+            setSuccessMsg(t('avatar_saved_msg'));
             setTimeout(() => setSuccessMsg(''), 4000);
         } catch (err) {
             console.warn('Fallback update avatar di Settings:', err);
             localStorage.setItem('userAvatarPath', path);
-            setSuccessMsg('Avatar berhasil diperbarui!');
+            setSuccessMsg(t('avatar_updated_msg'));
             setTimeout(() => setSuccessMsg(''), 4000);
         }
     };
@@ -45,7 +45,7 @@ const Settings = ({ onLogout }) => {
                         <Monitor className="text-blue-600" />
                         {t('settings')}
                     </h1>
-                    <p className="text-gray-500 dark:text-gray-400">Kelola profil, tampilan, dan preferensi akunmu.</p>
+                    <p className="text-gray-500 dark:text-gray-400">{t('settings_subtitle')}</p>
                 </div>
             </HeaderAvatar>
 
@@ -61,13 +61,13 @@ const Settings = ({ onLogout }) => {
                 <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-sm mb-6">
                     <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30 flex items-center justify-between">
                         <h3 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
-                            <User size={18} className="text-blue-600" /> Profil Akun & Avatar
+                            <User size={18} className="text-blue-600" /> {t('profile_avatar_card')}
                         </h3>
                         <Link 
                             to="/settings/profile" 
                             className="text-xs font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 hover:underline flex items-center gap-1"
                         >
-                            Edit Profil Lengkap
+                            {t('edit_full_profile')}
                         </Link>
                     </div>
 
@@ -90,7 +90,7 @@ const Settings = ({ onLogout }) => {
                                 <p className="font-bold text-gray-900 dark:text-white text-base">{userName}</p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">{userEmail}</p>
                                 <span className="inline-flex items-center gap-1 mt-1 text-[11px] text-gray-400">
-                                    <Sparkles size={11} className="text-amber-500" /> Klik foto atau tombol untuk ganti avatar
+                                    <Sparkles size={11} className="text-amber-500" /> {t('avatar_click_hint')}
                                 </span>
                             </div>
                         </div>
@@ -101,7 +101,7 @@ const Settings = ({ onLogout }) => {
                                 onClick={() => setIsModalOpen(true)}
                                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm shadow-blue-500/20 transition active:scale-95"
                             >
-                                <Palette size={14} /> Pilih Avatar Kartun
+                                <Palette size={14} /> {t('btn_choose_cartoon')}
                             </button>
                         </div>
                     </div>
@@ -112,7 +112,7 @@ const Settings = ({ onLogout }) => {
                     
                     {/* Header Card */}
                     <div className="p-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
-                        <h3 className="font-bold text-gray-800 dark:text-white">Preferensi Sistem</h3>
+                        <h3 className="font-bold text-gray-800 dark:text-white">{t('system_preferences')}</h3>
                     </div>
                     
                     <div className="divide-y divide-gray-100 dark:divide-gray-700">

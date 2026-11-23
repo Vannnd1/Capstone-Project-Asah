@@ -15,24 +15,30 @@ export const TARGET_CONFIGS = {
   santai: {
     key: "santai",
     title: "Santai",
+    title_en: "Relaxed",
     modulesPerDay: 1,
     desc: "1 Modul/Hari • Santai",
+    desc_en: "1 Module/Day • Relaxed",
     color: "emerald",
     badgeClass: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700",
   },
   fokus: {
     key: "fokus",
     title: "Fokus",
+    title_en: "Focused",
     modulesPerDay: 3,
     desc: "3 Modul/Hari • Sedang",
+    desc_en: "3 Modules/Day • Moderate",
     color: "blue",
     badgeClass: "bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border-blue-300 dark:border-blue-700",
   },
   hardcore: {
     key: "hardcore",
     title: "Hardcore",
+    title_en: "Hardcore",
     modulesPerDay: 5,
     desc: "5+ Modul/Hari • Intensif",
+    desc_en: "5+ Modules/Day • Intensive",
     color: "purple",
     badgeClass: "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300 border-purple-300 dark:border-purple-700",
   },
@@ -238,14 +244,21 @@ export const LearningProvider = ({ children }) => {
     return colors[style] || "gray";
   };
 
-  // Helper to get learning style label (Indonesian)
-  const getLearningStyleLabel = (style) => {
-    const labels = {
+  // Helper to get learning style label (Bilingual)
+  const getLearningStyleLabel = (style, lang = "id") => {
+    const labelsId = {
       fast_learner: "Pembelajar Cepat",
       consistent_learner: "Pembelajar Konsisten",
       reflective_learner: "Pembelajar Reflektif",
       passive_learner: "Pembelajar Pasif",
     };
+    const labelsEn = {
+      fast_learner: "Fast Learner",
+      consistent_learner: "Consistent Learner",
+      reflective_learner: "Reflective Learner",
+      passive_learner: "Passive Learner",
+    };
+    const labels = lang === "en" ? labelsEn : labelsId;
     return labels[style] || style;
   };
 

@@ -37,7 +37,7 @@ const Navbar = () => {
                     <div className="bg-blue-600 text-white p-2 rounded-lg">
                         <BrainCircuit size={24} />
                     </div>
-                    <span className="text-xl font-bold text-gray-900 dark:text-white">Adaptive Learning Insight</span>
+                    <span className="text-xl font-bold text-gray-900 dark:text-white">{t('app_name')}</span>
                 </div>
             </div>
             

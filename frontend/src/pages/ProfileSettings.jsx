@@ -96,7 +96,7 @@ const ProfileSettings = ({ onLogout }) => {
         setAvatarUrl(path);
         setSelectedFile(null); // Reset upload file kustom
         setErrorMsg('');
-        setSuccessMsg('Menyimpan avatar...');
+        setSuccessMsg(t('saving'));
 
         try {
             const cleanName = (name || '').trim() || localStorage.getItem('userName') || 'Siswa';
@@ -110,11 +110,11 @@ const ProfileSettings = ({ onLogout }) => {
             });
 
             localStorage.setItem('userAvatarPath', path);
-            setSuccessMsg('Avatar kartun berhasil dipilih dan disimpan!');
+            setSuccessMsg(t('preset_avatar_success_msg'));
         } catch (err) {
             console.warn('Gagal auto-save avatar, fallback ke localStorage:', err);
             localStorage.setItem('userAvatarPath', path);
-            setSuccessMsg('Avatar kartun berhasil diterapkan!');
+            setSuccessMsg(t('preset_avatar_success_msg'));
         }
     };
 
@@ -128,13 +128,13 @@ const ProfileSettings = ({ onLogout }) => {
         const cleanEmail = email.trim().toLowerCase();
 
         if (!cleanName) {
-            setErrorMsg("Nama lengkap tidak boleh kosong.");
+            setErrorMsg(t("err_empty_name"));
             setLoading(false);
             return;
         }
 
         if (!cleanEmail) {
-            setErrorMsg("Email tidak boleh kosong.");
+            setErrorMsg(t("err_empty_email"));
             setLoading(false);
             return;
         }
@@ -162,10 +162,10 @@ const ProfileSettings = ({ onLogout }) => {
             setEmail(updated.email || cleanEmail);
             setAvatarUrl(updated.image_path || finalAvatar);
             setSelectedFile(null);
-            setSuccessMsg("Profil dan email berhasil diperbarui!");
+            setSuccessMsg(t("profile_success_msg"));
         } catch (error) {
             console.error("Gagal update profil:", error);
-            setErrorMsg(error.message || "Gagal menyimpan perubahan.");
+            setErrorMsg(error.message || t("err_save_failed"));
         } finally {
             setLoading(false);
         }
@@ -176,14 +176,14 @@ const ProfileSettings = ({ onLogout }) => {
             {/* Header */}
             <div className="flex flex-col gap-4">
                 <button onClick={() => navigate('/settings')} className="self-start flex items-center gap-2 text-sm text-gray-500 hover:text-blue-600 transition">
-                    <ArrowLeft size={16} /> Kembali ke Pengaturan
+                    <ArrowLeft size={16} /> {t('back_to_settings')}
                 </button>
                 <HeaderAvatar onLogout={onLogout}>
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <User className="text-blue-600" /> Edit Profil
+                            <User className="text-blue-600" /> {t('edit_profile_title')}
                         </h1>
-                        <p className="text-gray-500 dark:text-gray-400">Update nama, email, dan foto profil akunmu.</p>
+                        <p className="text-gray-500 dark:text-gray-400">{t('edit_profile_desc')}</p>
                     </div>
                 </HeaderAvatar>
             </div>
@@ -221,10 +221,10 @@ const ProfileSettings = ({ onLogout }) => {
                             type="button"
                             onClick={() => setIsModalOpen(true)}
                             className="absolute inset-0 bg-black/40 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
-                            title="Ganti Avatar"
+                            title={t('avatar_click_hint')}
                         >
                             <Palette size={24} className="mb-1 text-white" />
-                            <span className="text-[11px] font-bold">Ganti Avatar</span>
+                            <span className="text-[11px] font-bold">{t('btn_choose_cartoon')}</span>
                         </button>
                     </div>
 
@@ -232,15 +232,15 @@ const ProfileSettings = ({ onLogout }) => {
                     <div className="mb-4">
                         {selectedFile ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
-                                Foto Kustom (Belum Disimpan)
+                                {t('avatar_custom_unsaved')}
                             </span>
                         ) : avatarUrl?.startsWith('/avatars/') ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                                <Sparkles size={11} /> Avatar Kartun Bawaan
+                                <Sparkles size={11} /> {t('avatar_cartoon_preset')}
                             </span>
                         ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                                Avatar Profil Aktif
+                                {t('avatar_active')}
                             </span>
                         )}
                     </div>
@@ -254,13 +254,13 @@ const ProfileSettings = ({ onLogout }) => {
                             className="flex items-center justify-center gap-2 w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition text-sm font-semibold shadow-sm shadow-blue-500/20 active:scale-[0.98]"
                         >
                             <Palette size={16} />
-                            Pilih Avatar Kartun Bawaan
+                            {t('btn_choose_cartoon_full')}
                         </button>
 
                         {/* Tombol 2: Upload Foto Sendiri */}
                         <label className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition text-xs font-medium">
                             <Upload size={14} />
-                            {selectedFile ? 'Ganti File Foto' : 'Atau Upload Foto Sendiri'}
+                            {selectedFile ? t('btn_replace_photo') : t('btn_upload_photo')}
                             <input 
                                 type="file" 
                                 className="hidden" 
@@ -268,21 +268,21 @@ const ProfileSettings = ({ onLogout }) => {
                                 onChange={handleFileChange}
                             />
                         </label>
-                        <p className="text-[11px] text-gray-400">Pilih dari koleksi kartun bawaan atau upload file JPG/PNG.</p>
+                        <p className="text-[11px] text-gray-400">{t('upload_hint')}</p>
                     </div>
 
                     {/* Quick Pick: Pilihan Cepat Avatar Kartun */}
                     <div className="w-full mt-6 pt-5 border-t border-gray-100 dark:border-gray-700 text-left">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 flex items-center gap-1">
-                                <Sparkles size={12} className="text-amber-500" /> Pilihan Populer
+                                <Sparkles size={12} className="text-amber-500" /> {t('popular_picks')}
                             </span>
                             <button
                                 type="button"
                                 onClick={() => setIsModalOpen(true)}
                                 className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
                             >
-                                Lihat Semua ({DEFAULT_AVATARS.length})
+                                {t('view_all_count', { count: DEFAULT_AVATARS.length })}
                             </button>
                         </div>
 
@@ -323,7 +323,7 @@ const ProfileSettings = ({ onLogout }) => {
                     <form onSubmit={handleSave} className="space-y-6">
                         {/* Input Nama Lengkap */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Nama Lengkap</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('full_name')}</label>
                             <div className="relative">
                                 <input 
                                     type="text" 
@@ -333,17 +333,17 @@ const ProfileSettings = ({ onLogout }) => {
                                         setErrorMsg('');
                                     }}
                                     required
-                                    placeholder="Nama Lengkap"
+                                    placeholder={t('full_name')}
                                     className="w-full p-3 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition"
                                 />
                                 <User className="absolute left-3 top-3.5 text-gray-400" size={18} />
                             </div>
-                            <p className="text-xs text-gray-400 mt-1">Nama ini akan ditampilkan pada dashboard dan header.</p>
+                            <p className="text-xs text-gray-400 mt-1">{t('name_hint')}</p>
                         </div>
 
                         {/* Input Email (Bisa Diedit) */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email</label>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('email_label')}</label>
                             <div className="relative">
                                 <input 
                                     type="email" 
@@ -358,7 +358,7 @@ const ProfileSettings = ({ onLogout }) => {
                                 />
                                 <Mail className="absolute left-3 top-3.5 text-gray-400" size={18} />
                             </div>
-                            <p className="text-xs text-gray-400 mt-1">Email aktif yang terhubung dengan akun dan dapat digunakan untuk login.</p>
+                            <p className="text-xs text-gray-400 mt-1">{t('email_hint')}</p>
                         </div>
 
                         {/* Tombol Simpan */}
@@ -368,7 +368,7 @@ const ProfileSettings = ({ onLogout }) => {
                                 disabled={loading}
                                 className="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg flex items-center gap-2 transition disabled:opacity-70 shadow-sm"
                             >
-                                {loading ? 'Menyimpan...' : <><Save size={20} /> Simpan Perubahan</>}
+                                {loading ? t('saving') : <><Save size={20} /> {t('save_changes')}</>}
                             </button>
                         </div>
                     </form>

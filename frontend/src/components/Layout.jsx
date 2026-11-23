@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
 import Navbar from './Navbar'; // Panggil Navbar yang sudah kita edit tadi
+import { useApp } from '../context/AppContext';
 
 const Layout = ({ children }) => {
+  const { t } = useApp();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
@@ -43,7 +45,7 @@ const Layout = ({ children }) => {
         
         {/* HEADER MOBILE (Hanya muncul di HP) */}
         <div className="md:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-4 sticky top-0 z-20 flex justify-between items-center">
-          <span className="font-bold text-lg text-gray-800 dark:text-white">Adaptive Learning Insight</span>
+          <span className="font-bold text-lg text-gray-800 dark:text-white">{t('app_name')}</span>
           <button onClick={() => setIsSidebarOpen(true)} className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800">
             <Menu size={24} />
           </button>

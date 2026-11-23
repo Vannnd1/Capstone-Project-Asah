@@ -13,7 +13,7 @@ const Target = ({ onLogout }) => {
                 {/* Judul Halaman di slot children HeaderAvatar */}
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('target')}</h1>
-                    <p className="text-gray-500 dark:text-gray-400">Tentukan intensitas belajar agar AI bisa menyesuaikan saran.</p>
+                    <p className="text-gray-500 dark:text-gray-400">{t('target_page_desc')}</p>
                 </div>
             </HeaderAvatar>
             

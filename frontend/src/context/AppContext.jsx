@@ -1,49 +1,8 @@
 import React, { createContext, useState, useEffect, useContext } from 'react'; 
-// 1. KAMUS BAHASA (Dictionary)
-const translations = {
-    id: {
-        dashboard: "Dashboard",
-        myClass: "Kelas Saya",
-        aiAnalysis: "Analisis AI",
-        target: "Target Belajar",
-        settings: "Pengaturan",
-        logout: "Keluar",
-        welcome: "Halo",
-        progressMsg: "Berikut progres belajar berdasarkan aktivitasmu.",
-        stat_target: "Target Mode",
-        stat_exam: "Rata-rata Ujian",
-        stat_study: "Total Belajar",
-        graph_title: "Aktivitas Modul Harian",
-        ai_insight: "AI Insight",
-        dark_mode: "Mode Fokus Malam",
-        dark_desc: "Kurangi kelelahan mata.",
-        lang_label: "Bahasa",
-        lang_desc: "Pilih bahasa antarmuka.",
-        notif_label: "Pengingat Target",
-        notif_desc: "Notifikasi harian."
-    },
-    en: {
-        dashboard: "Dashboard",
-        myClass: "My Courses",
-        aiAnalysis: "AI Analytics",
-        target: "Learning Target",
-        settings: "Settings",
-        logout: "Logout",
-        welcome: "Hello",
-        progressMsg: "Here is your learning progress based on activity.",
-        stat_target: "Target Mode",
-        stat_exam: "Exam Average",
-        stat_study: "Study Hours",
-        graph_title: "Daily Module Activity",
-        ai_insight: "AI Insight",
-        dark_mode: "Night Focus Mode",
-        dark_desc: "Reduce eye strain.",
-        lang_label: "Language",
-        lang_desc: "Choose interface language.",
-        notif_label: "Target Reminder",
-        notif_desc: "Daily notifications."
-    }
-};
+import { translations } from '../data/translations';
+
+// Re-export translations
+export { translations };
 
 // Buat Context
 const AppContext = createContext();
@@ -72,14 +31,19 @@ export const AppProvider = ({ children }) => {
         localStorage.setItem('lang', lang);
     };
 
-    // Fungsi penerjemah otomatis
-    const t = (key) => {
-        return translations[language][key] || key;
+    // Fungsi penerjemah otomatis dengan dukungan interpolasi {param}
+    const t = (key, params) => {
+        let text = translations[language]?.[key] ?? translations['id']?.[key] ?? key;
+        if (params && typeof text === 'string') {
+            Object.entries(params).forEach(([k, v]) => {
+                text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), v);
+            });
+        }
+        return text;
     };
 
     return (
-        // Hanya mengekspos fungsi-fungsi Context
-        <AppContext.Provider value={{ darkMode, toggleTheme, language, changeLanguage, t }}>
+        <AppContext.Provider value={{ darkMode, toggleTheme, language, changeLanguage, t, translations }}>
             {children}
         </AppContext.Provider>
     );

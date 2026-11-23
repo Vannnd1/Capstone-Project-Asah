@@ -1,9 +1,11 @@
 import React from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { useApp } from '../context/AppContext';
+import { getLocalizedChartItems } from '../mockData';
 
 const ProgressChart = ({ data }) => {
-    const { darkMode } = useApp();
+    const { darkMode, language } = useApp();
+    const chartData = getLocalizedChartItems(data, language);
 
     // Warna Bar (Kondisional)
     const activeColor = '#3B82F6'; // Blue-500
@@ -12,7 +14,7 @@ const ProgressChart = ({ data }) => {
     return (
         <div className="h-64 w-full mt-4">
             <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={darkMode ? '#374151' : '#E5E7EB'} />
                     
                     {/* XAxis sekarang menggunakan key 'label' (Sen, Sel / Minggu 1, Minggu 2) */}

@@ -13,7 +13,7 @@ const GeneralSettings = () => {
         </div>
         <div>
             <h3 className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('settings')}</h3>
-            <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Preferensi sistem.</p>
+            <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t('system_preferences')}</p>
         </div>
       </div>
 

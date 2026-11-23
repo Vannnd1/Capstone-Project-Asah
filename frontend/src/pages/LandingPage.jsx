@@ -5,31 +5,15 @@ import {
   Target,
   Zap,
   TrendingUp,
+  Globe,
 } from "lucide-react";
 import AuthModal from "../components/AuthModal";
-
-// Data untuk Fitur Card
-const features = [
-  {
-    icon: Target,
-    title: "Target Belajar Personal",
-    desc: "AI menyesuaikan intensitas modul harianmu berdasarkan kecepatan dan kemampuanmu.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Analisis Skill Mendalam",
-    desc: "Lihat peta kompetensi skillmu dan identifikasi area yang perlu ditingkatkan dengan data.",
-  },
-  {
-    icon: Zap,
-    title: "Feedback Instan",
-    desc: "Dapatkan saran dan insight cepat dari AI untuk ujian dan aktivitas modulmu.",
-  },
-];
+import { useApp } from "../context/AppContext";
 
 const LandingPage = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [initialMode, setInitialMode] = useState("login");
+  const { t, language, changeLanguage } = useApp();
 
   const handleOpenAuthModal = (mode) => {
     setInitialMode(mode);
@@ -40,10 +24,27 @@ const LandingPage = () => {
     setShowAuthModal(false);
   };
 
-  // Called when login/register succeeds (AuthContext handles state)
   const handleAuthSuccess = () => {
     setShowAuthModal(false);
   };
+
+  const features = [
+    {
+      icon: Target,
+      title: t("landing_feat_1_title"),
+      desc: t("landing_feat_1_desc"),
+    },
+    {
+      icon: TrendingUp,
+      title: t("landing_feat_2_title"),
+      desc: t("landing_feat_2_desc"),
+    },
+    {
+      icon: Zap,
+      title: t("landing_feat_3_title"),
+      desc: t("landing_feat_3_desc"),
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans flex flex-col">
@@ -54,15 +55,42 @@ const LandingPage = () => {
             <div className="bg-blue-600 text-white p-2 rounded-lg">
               <BrainCircuit size={24} />
             </div>
-            <span className="text-xl font-bold">AI Learning Insight</span>
+            <span className="text-xl font-bold">{t("app_name")}</span>
           </div>
-          {/* TOMBOL 1: MASUK */}
-          <button
-            onClick={() => handleOpenAuthModal("login")}
-            className="px-5 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
-          >
-            Masuk
-          </button>
+
+          <div className="flex items-center gap-3">
+            {/* Language Switcher Button */}
+            <div className="flex items-center bg-gray-100 rounded-lg p-0.5 text-xs font-bold border border-gray-200">
+              <button
+                onClick={() => changeLanguage("id")}
+                className={`px-2.5 py-1 rounded-md transition ${
+                  language === "id"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-500 hover:text-gray-900"
+                }`}
+              >
+                ID
+              </button>
+              <button
+                onClick={() => changeLanguage("en")}
+                className={`px-2.5 py-1 rounded-md transition ${
+                  language === "en"
+                    ? "bg-white text-blue-600 shadow-sm"
+                    : "text-gray-500 hover:text-gray-900"
+                }`}
+              >
+                EN
+              </button>
+            </div>
+
+            {/* TOMBOL: MASUK */}
+            <button
+              onClick={() => handleOpenAuthModal("login")}
+              className="px-5 py-2 text-sm font-medium text-blue-600 border border-blue-600 rounded-lg hover:bg-blue-50 transition"
+            >
+              {t("landing_login_btn")}
+            </button>
+          </div>
         </div>
       </nav>
 
@@ -70,15 +98,14 @@ const LandingPage = () => {
       <header className="flex-1 flex flex-col justify-center items-center text-center px-6 pt-32 pb-20">
         <div className="max-w-3xl mx-auto">
           <div className="inline-block px-4 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-semibold mb-6 border border-blue-100">
-            ✨ Platform Belajar Masa Depan
+            {t("landing_badge")}
           </div>
           <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">
-            Belajar Cerdas dengan{" "}
-            <span className="text-blue-600">Analisis AI</span>
+            {t("landing_hero_title_1")}
+            <span className="text-blue-600">{t("landing_hero_title_2")}</span>
           </h1>
           <p className="text-lg text-gray-500 mb-10">
-            AI kami menganalisis gaya belajarmu dan memberikan target harian
-            yang pas.
+            {t("landing_hero_desc")}
           </p>
 
           <div className="h-4"></div>
@@ -91,10 +118,9 @@ const LandingPage = () => {
         className="py-20 bg-gray-50 border-t border-b border-gray-100"
       >
         <div className="max-w-7xl mx-auto px-6 md:px-12 text-center">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Fitur Utama</h2>
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">{t("landing_features_title")}</h2>
           <p className="text-lg text-gray-500 mb-12 max-w-2xl mx-auto">
-            Tingkatkan efisiensi belajarmu dengan alat bantu berbasis kecerdasan
-            buatan.
+            {t("landing_features_desc")}
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -120,14 +146,14 @@ const LandingPage = () => {
       <footer className="py-12 bg-gray-900 text-white text-center">
         <div className="max-w-7xl mx-auto px-6">
           <h2 className="text-2xl font-bold mb-4">
-            Siap Mencoba Analisis AI Kami?
+            {t("landing_cta_title")}
           </h2>
           {/* TOMBOL 2: DAFTAR SEKARANG */}
           <button
             onClick={() => handleOpenAuthModal("register")}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 transition"
           >
-            Daftar Sekarang (Gratis)
+            {t("landing_cta_btn")}
           </button>
           <p className="text-sm text-gray-500 mt-6">
             &copy; {new Date().getFullYear()} AI Learning Insight. All rights

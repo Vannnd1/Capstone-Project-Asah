@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { X, Check, Search, Sparkles, Bot, Shield, Smile, SmilePlus, Heart, Palette } from 'lucide-react';
 import { AVATAR_CATEGORIES, DEFAULT_AVATARS } from '../data/defaultAvatars';
+import { useApp } from '../context/AppContext';
 
 const categoryIcons = {
   all: Sparkles,
@@ -12,6 +13,7 @@ const categoryIcons = {
 };
 
 const AvatarPickerModal = ({ isOpen, onClose, currentAvatar, onSelectAvatar }) => {
+  const { t } = useApp();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [tempSelected, setTempSelected] = useState(currentAvatar || '');
@@ -67,21 +69,21 @@ const AvatarPickerModal = ({ isOpen, onClose, currentAvatar, onSelectAvatar }) =
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                  Pilih Avatar Kartun Bawaan
+                  {t('modal_avatar_title')}
                 </h2>
                 <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300">
-                  Koleksi Ilustrasi
+                  {t('modal_illustration_badge')}
                 </span>
               </div>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Klik sekali pada avatar favoritmu untuk langsung menerapkannya ke profil akun
+                {t('modal_avatar_subtitle')}
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
             className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-            aria-label="Tutup"
+            aria-label={t('close')}
           >
             <X size={20} />
           </button>
@@ -109,7 +111,7 @@ const AvatarPickerModal = ({ isOpen, onClose, currentAvatar, onSelectAvatar }) =
                   }`}
                 >
                   <Icon size={14} />
-                  <span>{cat.label}</span>
+                  <span>{t(`cat_${cat.id}`) || cat.label}</span>
                   <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
                     isActive ? 'bg-blue-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
                   }`}>
@@ -125,7 +127,7 @@ const AvatarPickerModal = ({ isOpen, onClose, currentAvatar, onSelectAvatar }) =
             <Search className="absolute left-3 top-2.5 text-gray-400" size={15} />
             <input
               type="text"
-              placeholder="Cari avatar..."
+              placeholder={t('search_avatar_placeholder')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
@@ -137,7 +139,7 @@ const AvatarPickerModal = ({ isOpen, onClose, currentAvatar, onSelectAvatar }) =
         <div className="p-6 overflow-y-auto flex-1 bg-gray-50/50 dark:bg-gray-950/40">
           {filteredAvatars.length === 0 ? (
             <div className="py-12 text-center text-gray-500 dark:text-gray-400">
-              <p className="text-sm">Tidak ada avatar yang sesuai dengan pencarian "{searchQuery}".</p>
+              <p className="text-sm">{t('no_avatars_found', { query: searchQuery })}</p>
             </div>
           ) : (
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4">
@@ -193,16 +195,16 @@ const AvatarPickerModal = ({ isOpen, onClose, currentAvatar, onSelectAvatar }) =
                 <div className="w-9 h-9 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800 border-2 border-blue-500 shadow-sm p-0.5">
                   <img
                     src={tempSelected}
-                    alt="Dipilih"
+                    alt="Selected"
                     className="w-full h-full object-contain"
                   />
                 </div>
                 <span className="text-xs text-gray-600 dark:text-gray-400 hidden sm:inline">
-                  Klik avatar untuk langsung memilih
+                  {t('click_to_select_hint')}
                 </span>
               </div>
             ) : (
-              <span className="text-xs text-gray-400">Pilih salah satu avatar di atas</span>
+              <span className="text-xs text-gray-400">{t('select_one_above')}</span>
             )}
           </div>
 
@@ -212,7 +214,7 @@ const AvatarPickerModal = ({ isOpen, onClose, currentAvatar, onSelectAvatar }) =
               onClick={onClose}
               className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition font-medium"
             >
-              Batal
+              {t('cancel')}
             </button>
             <button
               type="button"
@@ -220,7 +222,7 @@ const AvatarPickerModal = ({ isOpen, onClose, currentAvatar, onSelectAvatar }) =
               disabled={!tempSelected}
               className="px-5 py-2 text-sm bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
             >
-              <Check size={16} /> Terapkan Avatar
+              <Check size={16} /> {t('btn_apply_avatar')}
             </button>
           </div>
         </div>

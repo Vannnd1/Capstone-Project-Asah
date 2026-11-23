@@ -21,21 +21,20 @@ import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
 import { useLearning } from "../context/LearningContext";
 import HeaderAvatar from "../components/HeaderAvatar";
-import { mockSkills } from "../mockData";
+import { mockSkills, mockJourneys } from "../mockData";
+import { localizeInsightText, localizeRecommendationReason } from "../utils/localizeInsight";
 
 const Analytics = ({ onLogout }) => {
-  const { darkMode } = useApp();
+  const { darkMode, t, language } = useApp();
   const { user } = useAuth();
   const {
     telemetry,
     insight,
     recommendations,
-    insightHistory,
     fetchInsightHistory,
     isLoading,
     getLearningStyleLabel,
     learningTarget,
-    targetProgress,
   } = useLearning();
 
   const axisColor = darkMode ? "#9CA3AF" : "#4B5563";
@@ -48,7 +47,6 @@ const Analytics = ({ onLogout }) => {
 
   const learningStyle = telemetry?.learning_style || "fast_learner";
   const metrics = telemetry?.user_metrics || {};
-  const behaviorAnalysis = telemetry?.behavior_analysis || {};
   const confidence = telemetry?.confidence || 0.89;
 
   // Static styling mapping to avoid Tailwind purge bug in production
@@ -56,26 +54,26 @@ const Analytics = ({ onLogout }) => {
     fast_learner: {
       gradient: "bg-gradient-to-br from-emerald-600 to-teal-800",
       icon: TrendingUp,
-      title: "Pembelajar Cepat (Fast Learner)",
-      desc: "Menyerap materi baru dengan ritme di atas rata-rata dan pemahaman tinggi.",
+      title: t("fast_learner_title"),
+      desc: t("fast_learner_desc"),
     },
     consistent_learner: {
       gradient: "bg-gradient-to-br from-blue-600 to-indigo-800",
       icon: CheckCircle,
-      title: "Pembelajar Konsisten",
-      desc: "Memiliki jadwal dan rutinitas belajar yang sangat teratur setiap hari.",
+      title: t("consistent_learner_title"),
+      desc: t("consistent_learner_desc"),
     },
     reflective_learner: {
       gradient: "bg-gradient-to-br from-purple-600 to-indigo-900",
       icon: BrainCircuit,
-      title: "Pembelajar Reflektif",
-      desc: "Mempelajari konsep secara mendalam dan teliti sebelum beralih ke materi baru.",
+      title: t("reflective_learner_title"),
+      desc: t("reflective_learner_desc"),
     },
     passive_learner: {
       gradient: "bg-gradient-to-br from-amber-600 to-orange-800",
       icon: AlertTriangle,
-      title: "Pembelajar Pasif",
-      desc: "Memerlukan target berkala dan motivasi tambahan untuk menjaga ritme belajar.",
+      title: t("passive_learner_title"),
+      desc: t("passive_learner_desc"),
     },
   };
 
@@ -84,28 +82,38 @@ const Analytics = ({ onLogout }) => {
 
   const targetProjections = {
     santai: {
-      eta: "6–8 Minggu",
-      badge: "Mode Santai (1 modul/hari)",
-      desc: "Dengan target santai 1 modul per hari, AI memproyeksikan kamu akan menyelesaikan seluruh alur belajar secara bertahap dan menyeluruh tanpa kelelahan.",
+      eta: t("target_santai_eta"),
+      badge: t("projection_santai_badge"),
+      desc: t("projection_santai_desc"),
     },
     fokus: {
-      eta: "3–4 Minggu",
-      badge: "Mode Fokus (3 modul/hari)",
-      desc: "Dengan target fokus 3 modul per hari, ritme belajarmu sangat ideal untuk menyelesaikan kurikulum tepat waktu dengan retensi materi yang tinggi.",
+      eta: t("target_fokus_eta"),
+      badge: t("projection_fokus_badge"),
+      desc: t("projection_fokus_desc"),
     },
     hardcore: {
-      eta: "1–2 Minggu",
-      badge: "Mode Hardcore (5+ modul/hari)",
-      desc: "Dengan target intensif 5+ modul per hari, kamu berada di jalur akselerasi cepat untuk menyelesaikan seluruh sertifikasi dalam waktu singkat.",
+      eta: t("target_hardcore_eta"),
+      badge: t("projection_hardcore_badge"),
+      desc: t("projection_hardcore_desc"),
     },
   };
   const currentProjection = targetProjections[learningTarget] || targetProjections.fokus;
+
+  const localizedInsightText = localizeInsightText(insight?.insight_text, language);
+
+  const getRecName = (rec) => {
+    if (language === 'en') {
+      const match = mockJourneys.find(j => j.id === rec.journey_id || j.name === rec.name);
+      if (match?.name_en) return match.name_en;
+    }
+    return rec.name;
+  };
 
   if (isLoading && !telemetry) {
     return (
       <div className="p-10 flex flex-col items-center justify-center space-y-4 h-96">
         <div className="w-10 h-10 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-gray-500">Menganalisis data belajarmu...</p>
+        <p className="text-gray-500">{t("analytics_loading")}</p>
       </div>
     );
   }
@@ -117,15 +125,15 @@ const Analytics = ({ onLogout }) => {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <BrainCircuit className="text-purple-600" />
-            Analisis AI Mendalam
+            {t("analytics_title")}
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Laporan detail mengenai kekuatan, kelemahan, dan potensi belajarmu berdasarkan analitik AI.
+            {t("analytics_subtitle")}
           </p>
         </div>
       </HeaderAvatar>
 
-      {/* --- 1. LEARNING STYLE HERO CARD (FIXED TAILWIND GRADIENT) --- */}
+      {/* --- 1. LEARNING STYLE HERO CARD --- */}
       <div
         className={`relative overflow-hidden p-6 md:p-8 rounded-2xl ${currentConfig.gradient} text-white shadow-xl`}
       >
@@ -140,17 +148,17 @@ const Analytics = ({ onLogout }) => {
               </div>
               <div>
                 <span className="inline-block text-xs uppercase tracking-wider font-semibold bg-white/20 px-3 py-1 rounded-full mb-1">
-                  Gaya Belajar Terdeteksi AI
+                  {t("learning_style_detected")}
                 </span>
                 <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight">
-                  {getLearningStyleLabel(learningStyle)}
+                  {getLearningStyleLabel(learningStyle, language)}
                 </h2>
                 <p className="text-white/80 text-sm mt-0.5">{currentConfig.desc}</p>
               </div>
             </div>
 
             <div className="bg-white/10 backdrop-blur-md px-5 py-3 rounded-xl border border-white/20 text-left md:text-right shrink-0">
-              <p className="text-xs text-white/80 uppercase font-medium">Confidence Score</p>
+              <p className="text-xs text-white/80 uppercase font-medium">{t("confidence_score")}</p>
               <p className="text-3xl font-black text-white">
                 {Math.round(confidence * 100)}%
               </p>
@@ -158,11 +166,11 @@ const Analytics = ({ onLogout }) => {
           </div>
 
           {/* AI Insight Paragraph */}
-          {insight && (
+          {localizedInsightText && (
             <div className="mt-5 pt-4 border-t border-white/20 flex items-start gap-3">
               <Sparkles className="text-yellow-300 shrink-0 mt-1" size={20} />
               <p className="text-white/95 leading-relaxed text-sm md:text-base font-medium">
-                "{insight.insight_text}"
+                "{localizedInsightText}"
               </p>
             </div>
           )}
@@ -178,14 +186,14 @@ const Analytics = ({ onLogout }) => {
             <div className="flex items-center justify-between mb-2">
               <h3 className="font-bold text-gray-900 dark:text-white text-lg flex items-center gap-2">
                 <Layers className="text-blue-600" size={20} />
-                Peta Kompetensi Skill
+                {t("skill_map_title")}
               </h3>
               <span className="text-xs bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-semibold px-2.5 py-1 rounded-full">
-                Live Data
+                {t("live_data")}
               </span>
             </div>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-              Visualisasi radar area penguasaan modul dan materi teknis kamu.
+              {t("skill_map_desc")}
             </p>
           </div>
 
@@ -225,11 +233,11 @@ const Analytics = ({ onLogout }) => {
           {/* Ringkasan Bawah Radar */}
           <div className="grid grid-cols-2 gap-3 pt-4 border-t border-gray-100 dark:border-gray-700 text-xs">
             <div className="bg-emerald-50 dark:bg-emerald-900/20 p-2.5 rounded-lg border border-emerald-100 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300">
-              <p className="font-bold">Skill Terkuat:</p>
+              <p className="font-bold">{t("strongest_skill")}</p>
               <p className="font-medium">React Core (120/150)</p>
             </div>
             <div className="bg-amber-50 dark:bg-amber-900/20 p-2.5 rounded-lg border border-amber-100 dark:border-amber-800 text-amber-800 dark:text-amber-300">
-              <p className="font-bold">Fokus Peningkatan:</p>
+              <p className="font-bold">{t("focus_improvement")}</p>
               <p className="font-medium">Testing & QA (65/150)</p>
             </div>
           </div>
@@ -245,13 +253,13 @@ const Analytics = ({ onLogout }) => {
             </div>
             <div>
               <span className="text-xs font-bold tracking-wide uppercase text-emerald-700 dark:text-emerald-400">
-                Kekuatan Utama
+                {t("card_strength_badge")}
               </span>
               <h4 className="font-bold text-emerald-900 dark:text-emerald-200 text-lg mt-0.5">
-                Penguasaan Konsep Cepat
+                {t("card_strength_title")}
               </h4>
               <p className="text-emerald-800 dark:text-emerald-300 mt-1 text-sm leading-relaxed">
-                Pemahaman <strong>React Core</strong> (Virtual DOM & Component Lifecycle) sangat kuat dengan skor <strong>120/150</strong>. Kamu sangat cepat menangkap logika dasar!
+                {t("card_strength_desc")}
               </p>
             </div>
           </div>
@@ -263,13 +271,13 @@ const Analytics = ({ onLogout }) => {
             </div>
             <div>
               <span className="text-xs font-bold tracking-wide uppercase text-amber-700 dark:text-amber-400">
-                Perlu Ditingkatkan
+                {t("card_improvement_badge")}
               </span>
               <h4 className="font-bold text-amber-900 dark:text-amber-200 text-lg mt-0.5">
-                Unit Testing & TDD
+                {t("card_improvement_title")}
               </h4>
               <p className="text-amber-800 dark:text-amber-300 mt-1 text-sm leading-relaxed">
-                Skor <strong>Testing</strong> (65/150) masih di bawah rata-rata. AI merekomendasikan untuk meninjau kembali modul <em>Unit Testing</em> agar kode aplikasimu lebih andal.
+                {t("card_improvement_desc")}
               </p>
             </div>
           </div>
@@ -282,14 +290,14 @@ const Analytics = ({ onLogout }) => {
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xs font-bold tracking-wide uppercase text-purple-700 dark:text-purple-400">
-                  Prediksi Kelulusan AI
+                  {t("card_projection_badge")}
                 </span>
                 <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800">
                   {currentProjection.badge}
                 </span>
               </div>
               <h4 className="font-bold text-purple-900 dark:text-purple-200 text-lg mt-1">
-                Target Selesai: {currentProjection.eta}
+                {t("card_projection_title", { eta: currentProjection.eta })}
               </h4>
               <p className="text-purple-800 dark:text-purple-300 mt-1 text-sm leading-relaxed">
                 {currentProjection.desc}
@@ -306,7 +314,7 @@ const Analytics = ({ onLogout }) => {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Sparkles className="text-yellow-300" size={22} />
-              <h3 className="font-bold text-lg">Rekomendasi Kursus Berikutnya dari AI</h3>
+              <h3 className="font-bold text-lg">{t("next_course_recommendations")}</h3>
             </div>
             <span className="text-xs bg-white/20 px-3 py-1 rounded-full font-medium">
               Market Basket Analysis
@@ -321,14 +329,16 @@ const Analytics = ({ onLogout }) => {
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-bold bg-white/25 px-2 py-0.5 rounded">
-                    Pilihan #{idx + 1}
+                    {t("recommendation_choice", { num: idx + 1 })}
                   </span>
                   <span className="text-xs text-yellow-300 font-semibold">
-                    Kecocokan: {Math.round(rec.score * 100)}%
+                    {t("match_score", { score: Math.round(rec.score * 100) })}
                   </span>
                 </div>
-                <h4 className="font-bold text-sm mb-1">{rec.name}</h4>
-                <p className="text-xs text-white/80 line-clamp-2">{rec.reason}</p>
+                <h4 className="font-bold text-sm mb-1">{getRecName(rec)}</h4>
+                <p className="text-xs text-white/80 line-clamp-2">
+                  {localizeRecommendationReason(rec.reason, language)}
+                </p>
               </div>
             ))}
           </div>

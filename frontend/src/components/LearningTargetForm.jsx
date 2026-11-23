@@ -31,28 +31,19 @@ const LearningTargetForm = () => {
     const targets = [
         {
             key: 'santai',
-            title: 'Santai',
-            desc: '1 Modul/Hari • Cocok untuk eksplorasi santai tanpa tekanan waktu.',
             modules: 1,
-            eta: '~6-8 Minggu',
             color: 'emerald',
             badge: 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700'
         },
         {
             key: 'fokus',
-            title: 'Fokus',
-            desc: '3 Modul/Hari • Ritme ideal untuk kemajuan stabil dan pemahaman materi optimal.',
             modules: 3,
-            eta: '~3-4 Minggu',
             color: 'blue',
             badge: 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700'
         },
         {
             key: 'hardcore',
-            title: 'Hardcore',
-            desc: '5+ Modul/Hari • Akselerasi tinggi untuk kamu yang ingin cepat lulus.',
             modules: 5,
-            eta: '~1-2 Minggu',
             color: 'purple',
             badge: 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-700'
         },
@@ -70,12 +61,12 @@ const LearningTargetForm = () => {
                         </div>
                         <div>
                             <h3 className="text-lg font-bold text-gray-900 dark:text-white">{t('target')}</h3>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Pilih ritme dan kuota modul belajar harianmu.</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{t('target_subtext')}</p>
                         </div>
                     </div>
 
                     <span className="text-xs font-semibold px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                        Aktif: <strong className="capitalize">{learningTarget}</strong>
+                        {t('target_active_label')} <strong className="capitalize">{t(`target_${learningTarget}_title`) || learningTarget}</strong>
                     </span>
                 </div>
 
@@ -84,6 +75,9 @@ const LearningTargetForm = () => {
                     {targets.map((target) => {
                         const isSelected = selectedTarget === target.key;
                         const isCurrentActive = learningTarget === target.key;
+                        const title = t(`target_${target.key}_title`);
+                        const desc = t(`target_${target.key}_desc`);
+                        const eta = t(`target_${target.key}_eta`);
 
                         return (
                             <div 
@@ -99,19 +93,19 @@ const LearningTargetForm = () => {
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2">
                                             <p className="font-bold text-gray-900 dark:text-white text-base">
-                                                {target.title}
+                                                {title}
                                             </p>
                                             <span className={`text-xs px-2 py-0.5 rounded-md font-semibold border ${target.badge}`}>
-                                                {target.modules} Modul / Hari
+                                                {t('modules_per_day', { count: target.modules })}
                                             </span>
                                             {isCurrentActive && (
                                                 <span className="text-[10px] bg-emerald-500 text-white font-bold px-2 py-0.5 rounded-full">
-                                                    Target Kamu
+                                                    {t('target_active_badge')}
                                                 </span>
                                             )}
                                         </div>
                                         <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed pr-6">
-                                            {target.desc}
+                                            {desc}
                                         </p>
                                     </div>
 
@@ -130,7 +124,7 @@ const LearningTargetForm = () => {
                                 <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700/60 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                                     <span className="flex items-center gap-1">
                                         <Calendar size={13} className="text-blue-500" />
-                                        Estimasi Selesai: <strong className="text-gray-700 dark:text-gray-300">{target.eta}</strong>
+                                        {t('target_eta_label')} <strong className="text-gray-700 dark:text-gray-300">{eta}</strong>
                                     </span>
                                 </div>
                             </div>
@@ -142,7 +136,7 @@ const LearningTargetForm = () => {
                 {saveSuccess && (
                     <div className="mb-4 p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center gap-2.5 text-sm animate-in fade-in">
                         <CheckCircle2 size={18} className="text-emerald-600 dark:text-emerald-400 shrink-0" />
-                        <span>Target berhasil diperbarui! Dashboard dan AI Insight telah disesuaikan.</span>
+                        <span>{t('target_save_success')}</span>
                     </div>
                 )}
 
@@ -155,12 +149,12 @@ const LearningTargetForm = () => {
                     {isSaving ? (
                         <>
                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            Menyimpan...
+                            {t('saving')}
                         </>
                     ) : (
                         <>
                             <Zap size={18} />
-                            Simpan Perubahan Target
+                            {t('target_save_btn')}
                         </>
                     )}
                 </button>
@@ -170,20 +164,20 @@ const LearningTargetForm = () => {
             <div className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-800 dark:to-gray-850 p-5 rounded-2xl border border-blue-100 dark:border-gray-700">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400 mb-3 flex items-center gap-2">
                     <Sparkles size={16} />
-                    Pengaruh Target Belajar Terhadap Fitur Aplikasi
+                    {t('target_impact_title')}
                 </h4>
                 <ul className="space-y-2.5 text-xs text-gray-600 dark:text-gray-300">
                     <li className="flex items-start gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0"></span>
-                        <span><strong>Dashboard Progres Harian:</strong> Menampilkan meteran pencapaian harian (contoh: 1/3 modul selesai) secara real-time.</span>
+                        <span><strong>{t('target_impact_1_title')}</strong> {t('target_impact_1_desc')}</span>
                     </li>
                     <li className="flex items-start gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0"></span>
-                        <span><strong>Personalisasi AI Insight:</strong> Memberikan evaluasi dan motivasi spesifik yang disesuaikan dengan target yang kamu pilih.</span>
+                        <span><strong>{t('target_impact_2_title')}</strong> {t('target_impact_2_desc')}</span>
                     </li>
                     <li className="flex items-start gap-2">
                         <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0"></span>
-                        <span><strong>Analisis & Prediksi Kelulusan:</strong> Menghitung proyeksi tanggal kelulusan course di halaman Analisis AI.</span>
+                        <span><strong>{t('target_impact_3_title')}</strong> {t('target_impact_3_desc')}</span>
                     </li>
                 </ul>
             </div>
