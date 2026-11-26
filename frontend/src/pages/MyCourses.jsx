@@ -56,7 +56,11 @@ const MyCourses = ({ onLogout }) => {
         };
 
         window.addEventListener('course-progress-updated', handleProgressUpdated);
-        return () => window.removeEventListener('course-progress-updated', handleProgressUpdated);
+        window.addEventListener('course-progress-synced', handleProgressUpdated);
+        return () => {
+            window.removeEventListener('course-progress-updated', handleProgressUpdated);
+            window.removeEventListener('course-progress-synced', handleProgressUpdated);
+        };
     }, []);
 
     // Filter daftar kelas

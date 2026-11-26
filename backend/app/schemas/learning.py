@@ -66,3 +66,45 @@ class ActivityResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+class SkillItem(BaseModel):
+    journey_id: int
+    subject: str
+    course_name: str
+    course_name_en: str
+    category: str
+    score: int
+    full_mark: int = 150
+    completed_modules: int = 0
+    total_modules: int = 0
+    completion_pct: int = 0
+    submissions: int = 0
+
+class EvaluationCard(BaseModel):
+    title: str
+    description: str
+    skill_subject: Optional[str] = None
+    score: Optional[int] = None
+    full_mark: int = 150
+    is_mastered: bool = False
+
+class GraduationProjection(BaseModel):
+    eta_text: str
+    badge: str
+    description: str
+    remaining_modules: int
+    completed_modules: int
+    total_modules: int
+    days_estimated: int
+
+class SkillMapResponse(BaseModel):
+    skills: List[SkillItem]
+    strongest: Optional[SkillItem] = None
+    weakest: Optional[SkillItem] = None
+    has_activity: bool = False
+    total_curriculum_modules: int = 21
+    completed_curriculum_modules: int = 0
+    strength_evaluation: Optional[EvaluationCard] = None
+    improvement_evaluation: Optional[EvaluationCard] = None
+    graduation_projection: Optional[GraduationProjection] = None
+    generated_at: datetime

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
     PlayCircle, 
@@ -19,6 +19,7 @@ import {
     toggleModuleCompleted, 
     getJourneyProgress 
 } from '../services/courseProgressService';
+import * as api from '../services/ApiService';
 import { useApp } from '../context/AppContext';
 
 const CourseDetail = () => {
@@ -39,6 +40,8 @@ const CourseDetail = () => {
     const [toastMsg, setToastMsg] = useState('');
     const [selectedQuizOption, setSelectedQuizOption] = useState(null);
     const [quizAnswered, setQuizAnswered] = useState(false);
+    const loggedViewsRef = useRef(new Set());
+    const loggedSubmitsRef = useRef(new Set());
 
     const activeModule = modules.find(m => m.id === activeModuleId) || modules[0] || null;
 
@@ -59,13 +62,34 @@ const CourseDetail = () => {
         if (modules.length > 0 && !activeModuleId) {
             setActiveModuleId(modules[0].id);
         }
+
+        const handleSynced = () => refreshProgress();
+        window.addEventListener('course-progress-synced', handleSynced);
+        return () => window.removeEventListener('course-progress-synced', handleSynced);
     }, [courseId]);
 
-    // Reset quiz state ketika berpindah modul
+    // Catat aktivitas 'view' (sekali per modul per sesi) & reset quiz state ketika berpindah modul
     useEffect(() => {
         setSelectedQuizOption(null);
         setQuizAnswered(false);
-    }, [activeModuleId]);
+
+        if (activeModule && course) {
+            const viewKey = `${courseId}-${activeModule.id}`;
+            if (!loggedViewsRef.current.has(viewKey)) {
+                loggedViewsRef.current.add(viewKey);
+                api.logActivity({
+                    journey_id: courseId,
+                    tutorial_id: activeModule.id,
+                    action: 'view',
+                    duration_seconds: 120,
+                })
+                    .then(() => {
+                        window.dispatchEvent(new CustomEvent('course-activity-logged'));
+                    })
+                    .catch(() => {});
+            }
+        }
+    }, [activeModule?.id, courseId]);
 
     if (!course) {
         return (
@@ -235,6 +259,20 @@ const CourseDetail = () => {
                                                         onClick={() => {
                                                             setSelectedQuizOption(idx);
                                                             setQuizAnswered(true);
+                                                            const subKey = `${courseId}-${activeModule.id}`;
+                                                            if (!loggedSubmitsRef.current.has(subKey)) {
+                                                                loggedSubmitsRef.current.add(subKey);
+                                                                api.logActivity({
+                                                                    journey_id: courseId,
+                                                                    tutorial_id: activeModule.id,
+                                                                    action: 'submit',
+                                                                    duration_seconds: 180,
+                                                                })
+                                                                    .then(() => {
+                                                                        window.dispatchEvent(new CustomEvent('course-activity-logged'));
+                                                                    })
+                                                                    .catch(() => {});
+                                                            }
                                                         }}
                                                         className={`w-full text-left p-3 rounded-lg text-xs md:text-sm transition border ${
                                                             selectedQuizOption === idx

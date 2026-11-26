@@ -133,22 +133,32 @@ export const getTelemetry = async () => {
     return apiRequest('/api/learning/telemetry', { method: 'GET' });
 };
 
+/**
+ * Get user skill map and AI evaluation cards derived from real activities
+ * @param {string} lang - 'id' | 'en'
+ */
+export const getSkillMap = async (lang = 'id') => {
+    return apiRequest(`/api/learning/skill-map?lang=${lang}`, { method: 'GET' });
+};
+
 // === AI INSIGHTS API ===
 
 /**
  * Get AI-generated insight for current user
+ * @param {string} lang - 'id' | 'en'
  */
-export const getInsight = async () => {
-    return apiRequest('/api/learning/insight', { method: 'GET' });
+export const getInsight = async (lang = 'id') => {
+    return apiRequest(`/api/learning/insight?lang=${lang}`, { method: 'GET' });
 };
 
 /**
  * Get insight history with pagination
  * @param {number} limit - Number of insights per page (1-100)
  * @param {number} offset - Offset for pagination
+ * @param {string} lang - 'id' | 'en'
  */
-export const getInsightHistory = async (limit = 10, offset = 0) => {
-    return apiRequest(`/api/learning/insight/history?limit=${limit}&offset=${offset}`, {
+export const getInsightHistory = async (limit = 10, offset = 0, lang = 'id') => {
+    return apiRequest(`/api/learning/insight/history?limit=${limit}&offset=${offset}&lang=${lang}`, {
         method: 'GET'
     });
 };
@@ -156,11 +166,12 @@ export const getInsightHistory = async (limit = 10, offset = 0) => {
 // === COURSE RECOMMENDATIONS API ===
 
 /**
- * Get course recommendations based on Market Basket Analysis
+ * Get course recommendations based on user activities and skill gaps
  * @param {number} n - Number of recommendations (1-20)
+ * @param {string} lang - 'id' | 'en'
  */
-export const getRecommendations = async (n = 5) => {
-    return apiRequest(`/api/learning/recommendation?n=${n}`, { method: 'GET' });
+export const getRecommendations = async (n = 5, lang = 'id') => {
+    return apiRequest(`/api/learning/recommendation?n=${n}&lang=${lang}`, { method: 'GET' });
 };
 
 // === ACTIVITY LOGGING API ===
@@ -175,6 +186,19 @@ export const logActivity = async (activityData) => {
         method: 'POST',
         body: JSON.stringify(activityData),
     });
+};
+
+/**
+ * Remove a logged learning activity (e.g. when un-completing a module)
+ * @param {number} journeyId
+ * @param {number} tutorialId
+ * @param {string} action
+ */
+export const removeActivity = async (journeyId, tutorialId, action = 'complete') => {
+    return apiRequest(
+        `/api/learning/activity?journey_id=${journeyId}&tutorial_id=${tutorialId}&action=${encodeURIComponent(action)}`,
+        { method: 'DELETE' }
+    );
 };
 
 /**
