@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+﻿import React, { useEffect } from "react";
 import {
   Radar,
   RadarChart,
@@ -170,7 +170,7 @@ const Analytics = ({ onLogout }) => {
             <div className="mt-5 pt-4 border-t border-white/20 flex items-start gap-3">
               <Sparkles className="text-yellow-300 shrink-0 mt-1" size={20} />
               <p className="text-white/95 leading-relaxed text-sm md:text-base font-medium">
-                "{localizedInsightText}"
+                {localizedInsightText}
               </p>
             </div>
           )}
