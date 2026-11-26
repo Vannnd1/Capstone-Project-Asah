@@ -107,12 +107,14 @@ export const translations = {
     level_moderate: "Sedang",
     level_low: "Rendah",
     level_very_fast: "Sangat Cepat",
+    level_fast: "Cepat",
     level_steady: "Stabil",
     level_moderate_speed: "Sedang",
     level_slow: "Santai",
     level_excellent: "Luar Biasa",
     level_good: "Bagus",
     level_fair: "Cukup",
+    level_developing: "Berkembang",
 
     // --- Recommendations ---
     course_recommendations: "Rekomendasi Course",
@@ -400,12 +402,14 @@ export const translations = {
     level_moderate: "Moderate",
     level_low: "Low",
     level_very_fast: "Very Fast",
+    level_fast: "Fast",
     level_steady: "Steady",
     level_moderate_speed: "Moderate",
     level_slow: "Slow",
     level_excellent: "Excellent",
     level_good: "Good",
     level_fair: "Fair",
+    level_developing: "Developing",
 
     // --- Recommendations ---
     course_recommendations: "Course Recommendations",

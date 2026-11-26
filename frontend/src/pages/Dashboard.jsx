@@ -298,18 +298,31 @@ const Dashboard = ({ onLogout }) => {
               {t("course_recommendations")}
             </h3>
             {recommendations.length > 0 ? (
-              <ul className="space-y-3">
+              <ul className="space-y-2.5">
                 {recommendations.slice(0, 3).map((rec, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span className="bg-white/20 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0">
-                      {idx + 1}
-                    </span>
-                    <div>
-                      <p className="font-medium text-sm">{getRecName(rec)}</p>
-                      <p className="text-blue-200 text-xs">
-                        Score: {Math.round(rec.score * 100)}%
-                      </p>
-                    </div>
+                  <li key={rec.journey_id || idx}>
+                    <Link
+                      to={`/course/${rec.journey_id}`}
+                      className="flex items-center justify-between gap-2 p-2 -mx-2 rounded-xl hover:bg-white/10 transition group"
+                    >
+                      <div className="flex items-start gap-2.5 min-w-0">
+                        <span className="bg-white/20 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                          {idx + 1}
+                        </span>
+                        <div className="min-w-0">
+                          <p className="font-medium text-sm group-hover:underline truncate">
+                            {getRecName(rec)}
+                          </p>
+                          <p className="text-blue-200 text-xs">
+                            {t("match_score", { score: Math.round(rec.score * 100) })}
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronRight
+                        size={16}
+                        className="text-blue-200 shrink-0 opacity-70 group-hover:opacity-100 group-hover:translate-x-0.5 transition"
+                      />
+                    </Link>
                   </li>
                 ))}
               </ul>

@@ -1,4 +1,5 @@
 ﻿import React, { useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Radar,
   RadarChart,
@@ -17,6 +18,7 @@ import {
   Calendar,
   Layers,
   Award,
+  ChevronRight,
 } from "lucide-react";
 import { useApp } from "../context/AppContext";
 import { useAuth } from "../context/AuthContext";
@@ -432,9 +434,10 @@ const Analytics = ({ onLogout }) => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {recommendations.slice(0, 3).map((rec, idx) => (
-              <div
+              <Link
                 key={rec.journey_id || idx}
-                className="bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/20 hover:bg-white/15 transition"
+                to={`/course/${rec.journey_id}`}
+                className="block bg-white/10 backdrop-blur-sm p-4 rounded-xl border border-white/20 hover:bg-white/20 transition group"
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-bold bg-white/25 px-2 py-0.5 rounded">
@@ -444,11 +447,14 @@ const Analytics = ({ onLogout }) => {
                     {t("match_score", { score: Math.round(rec.score * 100) })}
                   </span>
                 </div>
-                <h4 className="font-bold text-sm mb-1">{getRecName(rec)}</h4>
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <h4 className="font-bold text-sm group-hover:underline">{getRecName(rec)}</h4>
+                  <ChevronRight size={15} className="shrink-0 opacity-75 group-hover:translate-x-0.5 transition" />
+                </div>
                 <p className="text-xs text-white/80 line-clamp-2">
                   {localizeRecommendationReason(rec.reason, language)}
                 </p>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
